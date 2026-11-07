@@ -1,6 +1,6 @@
 // Shared by every page: header state, sign-in, and calls to the server.
 
-export const API = "https://pdf-occlusion-api.ravi14-bandaru.workers.dev";
+export const API = "https://pdf-occlusion-api.pdf-occlusion.workers.dev";
 export const ANKIWEB = "https://ankiweb.net/shared/info/783821131";
 
 const FIREBASE = {
