@@ -11,14 +11,6 @@ const FIREBASE = {
 };
 const SDK = "https://www.gstatic.com/firebasejs/10.12.2";
 
-// header gets a rule once the page scrolls
-const head = document.querySelector(".site-head");
-if (head) {
-  const onScroll = () => head.classList.toggle("scrolled", window.scrollY > 8);
-  addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-}
-
 let authPromise = null;
 async function auth() {
   if (!authPromise) {
@@ -86,5 +78,3 @@ export function when(ms) {
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 }
 
-// year in the footer
-for (const el of document.querySelectorAll("[data-year]")) el.textContent = new Date().getFullYear();

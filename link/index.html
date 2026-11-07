@@ -3,72 +3,61 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Link Anki, PDF Occlusion</title>
+<title>link anki, pdf occlusion</title>
 <meta name="description" content="Link the PDF Occlusion add-on to your account.">
-<meta property="og:title" content="PDF Occlusion">
-<meta property="og:description" content="Lecture PDFs into Anki image occlusion cards. A whole lecture, occluded in a minute.">
+<meta property="og:title" content="pdf occlusion">
+<meta property="og:description" content="An Anki add-on that turns lecture PDFs into image occlusion cards.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
 <meta property="og:url" content="https://pdf-occlusion.github.io/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/site.css">
 </head>
 <body>
-<header class="site-head">
-  <div class="wrap">
-    <a class="brand" href="/"><img src="/assets/logo.svg" alt="" width="26" height="26">PDF Occlusion</a>
-    <nav class="nav" aria-label="Main">
-      <a class="hide-s" href="/#how">How it works</a>
-      <a href="/pricing/">Pricing</a>
-      <a href="/account/">Account</a>
-      <a class="btn btn-primary btn-small" href="https://ankiweb.net/shared/info/783821131">Get the add-on</a>
-    </nav>
-  </div>
-</header>
+<main>
+<div class="top small">
+  <a href="/" aria-label="pdf occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
+  <h1>link anki</h1>
+  <nav class="links" aria-label="Main">
+    <a href="https://ankiweb.net/shared/info/783821131">ankiweb</a>
+    <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion">github</a>
+    <a href="/pricing/">pricing</a>
+    <a href="/account/">account</a>
+  </nav>
+</div>
 
-<main class="app">
-  <div class="wrap" style="max-width:40rem">
-    <h1>Link Anki</h1>
-    <div id="step-code">
-      <p class="lede" style="margin-top:1rem">Check that this matches the code showing in Anki.</p>
-      <p class="code-big" id="code"></p>
-    </div>
-    <div id="link-out" class="hidden" style="margin-top:1.6rem">
-      <div class="signin" style="margin-top:0"><button class="btn btn-quiet" id="sign-in"><svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>Sign in with Google</button></div>
-    </div>
-    <div id="link-in" class="hidden" style="margin-top:1.6rem">
-      <p class="muted" id="as"></p>
-      <div class="actions-row"><button class="btn btn-primary" id="approve">Link this Anki</button>
-      <button class="btn btn-quiet" id="switch">Use another account</button></div>
-    </div>
-    <div id="done" class="hidden" style="margin-top:1.6rem">
-      <div class="notice">Linked. You can close this tab and go back to Anki.</div>
-    </div>
-    <div class="notice error hidden" id="link-error" role="alert"></div>
+<div id="step-code">
+  <p class="lede">the code anki is showing</p>
+  <p class="code" id="code"></p>
+</div>
+<div id="link-out" class="hidden">
+  <div class="row center" style="margin-top:22px"><button id="sign-in"><svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>sign in with google</button></div>
+</div>
+<div id="link-in" class="hidden">
+  <p class="muted center" id="as" style="margin-top:18px"></p>
+  <div class="row center">
+    <button class="primary" id="approve">link this anki</button>
+    <button id="switch">use another account</button>
   </div>
+</div>
+<p class="note center hidden" id="done">linked. you can close this tab and go back to anki.</p>
+<p class="error hidden center" id="link-error" role="alert"></p>
 </main>
-
-<footer class="site-foot">
-  <div class="wrap">
-    <span>&copy; <span data-year></span> PDF Occlusion</span>
-    <nav aria-label="Footer">
-      <a href="/pricing/">Pricing</a>
-      <a href="/account/">Account</a>
-      <a href="/privacy/">Privacy</a>
-      <a href="/terms/">Terms</a>
-      <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion">Source</a>
-      <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion/issues">Help</a>
-    </nav>
-  </div>
+<footer>
+  <nav aria-label="Footer">
+    <a href="/privacy/">privacy</a>
+    <a href="/terms/">terms</a>
+    <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion/issues">help</a>
+  </nav>
 </footer>
 <script type="module">
 import { watchUser, signIn, signOut, api } from "/assets/app.js";
 const $ = (id) => document.getElementById(id);
 const code = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
-$("code").textContent = code || "No code";
+$("code").textContent = code || "no code";
 const err = (m) => { $("link-error").textContent = m; $("link-error").classList.remove("hidden"); };
 if (!code) err("Open this page from the add-on: Auto-occlude, then Sign in.");
 let user = null;
@@ -76,7 +65,7 @@ watchUser((u) => {
   user = u;
   $("link-out").classList.toggle("hidden", !!u || !code);
   $("link-in").classList.toggle("hidden", !u || !code);
-  if (u) $("as").textContent = `Signed in as ${u.email}`;
+  if (u) $("as").textContent = u.email;
 });
 $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
 $("switch").addEventListener("click", async () => { await signOut(); await signIn().catch((e) => err(e.message)); });
