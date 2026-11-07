@@ -81,13 +81,13 @@ G_ICON = ('<svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill
 
 # ------------------------------------------------------------------ home
 PRICES = f"""<div class="panel prices">
-  <div><div class="amount">free</div><div class="what">your first 100 pages</div></div>
+  <div><div class="amount">free</div><div class="what">your first 50 pages</div></div>
   <div><div class="amount">$14.99</div><div class="what">a month for 1,500 pages</div></div>
   <div><div class="amount">$4.99</div><div class="what">400 pages, no expiry</div></div>
 </div>"""
 
 page("index.html", "pdf occlusion",
-     "Auto-occlude boxes every label, term and key phrase in a PDF for you, inside Anki. Your first 100 pages are free.",
+     "Auto-occlude boxes every label, term and key phrase in a PDF for you, inside Anki. Your first 50 pages are free.",
      body=top("pdf occlusion", small=False) + f"""
 <div class="badges">
   <span class="badge"><span class="badge-k">add-on code</span><span class="badge-v">783821131</span></span>
@@ -137,14 +137,14 @@ page("index.html", "pdf occlusion",
 
 # ------------------------------------------------------------------ pricing
 page("pricing/index.html", "pricing",
-     "Your first 100 pages are free. Then $14.99 a month for 1,500 pages, $149.90 a year, or 400 pages for $4.99.",
+     "Your first 50 pages are free. Then $14.99 a month for 1,500 pages, $149.90 a year, or 400 pages for $4.99.",
      body=top("pricing", "pricing") + f"""
 <p class="lede">auto-occlude is counted in pages. the add-on itself is free.</p>
 
 <div class="panel" style="margin-top:30px">
   <ul class="plain price-list">
     <li>
-      <div><div class="name">first 100 pages</div><div class="what">on us</div></div>
+      <div><div class="name">first 50 pages</div><div class="what">on us</div></div>
       <div class="amount">free</div>
     </li>
     <li>
