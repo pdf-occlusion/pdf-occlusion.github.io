@@ -39,15 +39,15 @@
 
   <div class="panel" style="margin-top:26px">
     <div class="left" id="left">0</div>
-    <div class="muted" id="left-note">pdfs left</div>
+    <div class="muted" id="left-note">pages left</div>
     <dl class="kv">
       <dt>plan</dt><dd id="plan">none</dd>
       <dt>this month</dt><dd id="month"></dd>
-      <dt>extra pdfs</dt><dd id="packs"></dd>
+      <dt>extra pages</dt><dd id="packs"></dd>
     </dl>
     <div class="row">
       <a class="btn primary" href="/pricing/" id="upgrade">see pricing</a>
-      <button id="pack">buy 10 pdfs</button>
+      <button id="pack">buy 400 pages</button>
       <button class="hidden" id="billing">manage billing</button>
     </div>
   </div>
@@ -90,19 +90,19 @@ $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message
 $("sign-out").addEventListener("click", () => signOut());
 const paid = new URLSearchParams(location.search).get("paid");
 if (paid) {
-  $("paid").textContent = paid === "pack10" ? "thanks, 10 pdfs were added." : "thanks, your plan is active.";
+  $("paid").textContent = paid === "pack" ? "thanks, 400 pages were added." : "thanks, your plan is active.";
   $("paid").classList.remove("hidden");
 }
 async function load() {
   const me = await api("/v1/me", { user });
   $("who").textContent = me.email || "";
-  $("left").textContent = me.lectures_left;
-  $("left-note").textContent = me.lectures_left === 1 ? "pdf left" : "pdfs left";
-  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? "free pdf unused" : "none";
+  $("left").textContent = me.pages_left.toLocaleString();
+  $("left-note").textContent = me.pages_left === 1 ? "page left" : "pages left";
+  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? `${me.free_left} free pages` : "none";
   $("month").textContent = me.plan ? `${me.plan_used} of ${me.plan_allowance} used` : "no plan";
-  $("packs").textContent = me.pack_credits ? `${me.pack_credits} left` : "none";
+  $("packs").textContent = me.pack_pages ? `${me.pack_pages} left` : "none";
   $("upgrade").classList.toggle("hidden", !!me.plan);
-  $("billing").classList.toggle("hidden", !me.plan && !me.pack_credits && !paid);
+  $("billing").classList.toggle("hidden", !me.plan && !me.pack_pages && !paid);
   const dev = $("devices"); dev.replaceChildren();
   for (const d of me.devices) {
     const li = document.createElement("li");
@@ -133,7 +133,7 @@ async function go(path, body) {
   try { const { url } = await api(path, { method: "POST", body, user }); location.href = url; }
   catch (e) { err(e.message); }
 }
-$("pack").addEventListener("click", () => go("/v1/checkout", { product: "pack10" }));
+$("pack").addEventListener("click", () => go("/v1/checkout", { product: "pack" }));
 $("billing").addEventListener("click", () => go("/v1/portal"));
 const asking = (on) => {
   $("delete").classList.toggle("hidden", on);

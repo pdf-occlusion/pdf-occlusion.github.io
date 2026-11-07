@@ -81,13 +81,13 @@ G_ICON = ('<svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill
 
 # ------------------------------------------------------------------ home
 PRICES = f"""<div class="panel prices">
-  <div><div class="amount">free</div><div class="what">your first pdf</div></div>
-  <div><div class="amount">$14.99</div><div class="what">a month for 60 pdfs</div></div>
-  <div><div class="amount">$4.99</div><div class="what">10 pdfs, no expiry</div></div>
+  <div><div class="amount">free</div><div class="what">your first 100 pages</div></div>
+  <div><div class="amount">$14.99</div><div class="what">a month for 1,500 pages</div></div>
+  <div><div class="amount">$4.99</div><div class="what">400 pages, no expiry</div></div>
 </div>"""
 
 page("index.html", "pdf occlusion",
-     "Auto-occlude boxes every label, term and key phrase in a PDF for you, inside Anki. Your first PDF is free.",
+     "Auto-occlude boxes every label, term and key phrase in a PDF for you, inside Anki. Your first 100 pages are free.",
      body=top("pdf occlusion", small=False) + f"""
 <div class="badges">
   <span class="badge"><span class="badge-k">add-on code</span><span class="badge-v">783821131</span></span>
@@ -137,27 +137,27 @@ page("index.html", "pdf occlusion",
 
 # ------------------------------------------------------------------ pricing
 page("pricing/index.html", "pricing",
-     "Your first PDF is free. Then $14.99 a month for 60 PDFs, $149.90 a year, or 10 PDFs for $4.99.",
+     "Your first 100 pages are free. Then $14.99 a month for 1,500 pages, $149.90 a year, or 400 pages for $4.99.",
      body=top("pricing", "pricing") + f"""
-<p class="lede">one pdf of up to 150 pages is one use of auto-occlude. the add-on itself is free.</p>
+<p class="lede">auto-occlude is counted in pages. the add-on itself is free.</p>
 
 <div class="panel" style="margin-top:30px">
   <ul class="plain price-list">
     <li>
-      <div><div class="name">first pdf</div><div class="what">on us</div></div>
+      <div><div class="name">first 100 pages</div><div class="what">on us</div></div>
       <div class="amount">free</div>
     </li>
     <li>
-      <div><div class="name">monthly</div><div class="what">60 pdfs a month</div></div>
+      <div><div class="name">monthly</div><div class="what">1,500 pages a month</div></div>
       <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">yearly</div><div class="what">60 pdfs a month, two months cheaper</div></div>
+      <div><div class="name">yearly</div><div class="what">1,500 pages a month, two months cheaper</div></div>
       <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">10 pdfs</div><div class="what">no expiry</div></div>
-      <div class="row" style="margin:0"><span class="amount">$4.99</span><button data-buy="pack10">buy</button></div>
+      <div><div class="name">400 pages</div><div class="what">no expiry</div></div>
+      <div class="row" style="margin:0"><span class="amount">$4.99</span><button data-buy="pack">buy</button></div>
     </li>
   </ul>
 </div>
@@ -165,8 +165,9 @@ page("pricing/index.html", "pricing",
 
 <section>
   <ul class="dots">
-    <li>A plan's pdfs reset each month. Packs are used once they run out.</li>
+    <li>A plan's pages reset each month. Extra pages are used once they run out.</li>
     <li>Cancel any time from your account. The plan runs to the end of what you paid for.</li>
+    <li>Pages are counted as they are done, so a run you stop early only uses what was finished.</li>
     <li>Boxing by hand is always free.</li>
   </ul>
 </section>
@@ -207,15 +208,15 @@ page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.
 
   <div class="panel" style="margin-top:26px">
     <div class="left" id="left">0</div>
-    <div class="muted" id="left-note">pdfs left</div>
+    <div class="muted" id="left-note">pages left</div>
     <dl class="kv">
       <dt>plan</dt><dd id="plan">none</dd>
       <dt>this month</dt><dd id="month"></dd>
-      <dt>extra pdfs</dt><dd id="packs"></dd>
+      <dt>extra pages</dt><dd id="packs"></dd>
     </dl>
     <div class="row">
       <a class="btn primary" href="/pricing/" id="upgrade">see pricing</a>
-      <button id="pack">buy 10 pdfs</button>
+      <button id="pack">buy 400 pages</button>
       <button class="hidden" id="billing">manage billing</button>
     </div>
   </div>
@@ -250,19 +251,19 @@ $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message
 $("sign-out").addEventListener("click", () => signOut());
 const paid = new URLSearchParams(location.search).get("paid");
 if (paid) {
-  $("paid").textContent = paid === "pack10" ? "thanks, 10 pdfs were added." : "thanks, your plan is active.";
+  $("paid").textContent = paid === "pack" ? "thanks, 400 pages were added." : "thanks, your plan is active.";
   $("paid").classList.remove("hidden");
 }
 async function load() {
   const me = await api("/v1/me", { user });
   $("who").textContent = me.email || "";
-  $("left").textContent = me.lectures_left;
-  $("left-note").textContent = me.lectures_left === 1 ? "pdf left" : "pdfs left";
-  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? "free pdf unused" : "none";
+  $("left").textContent = me.pages_left.toLocaleString();
+  $("left-note").textContent = me.pages_left === 1 ? "page left" : "pages left";
+  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? `${me.free_left} free pages` : "none";
   $("month").textContent = me.plan ? `${me.plan_used} of ${me.plan_allowance} used` : "no plan";
-  $("packs").textContent = me.pack_credits ? `${me.pack_credits} left` : "none";
+  $("packs").textContent = me.pack_pages ? `${me.pack_pages} left` : "none";
   $("upgrade").classList.toggle("hidden", !!me.plan);
-  $("billing").classList.toggle("hidden", !me.plan && !me.pack_credits && !paid);
+  $("billing").classList.toggle("hidden", !me.plan && !me.pack_pages && !paid);
   const dev = $("devices"); dev.replaceChildren();
   for (const d of me.devices) {
     const li = document.createElement("li");
@@ -293,7 +294,7 @@ async function go(path, body) {
   try { const { url } = await api(path, { method: "POST", body, user }); location.href = url; }
   catch (e) { err(e.message); }
 }
-$("pack").addEventListener("click", () => go("/v1/checkout", { product: "pack10" }));
+$("pack").addEventListener("click", () => go("/v1/checkout", { product: "pack" }));
 $("billing").addEventListener("click", () => go("/v1/portal"));
 const asking = (on) => {
   $("delete").classList.toggle("hidden", on);
@@ -424,7 +425,7 @@ page("terms/index.html", "terms", "Terms of service for PDF Occlusion.",
   <p>The add-on's source code is licensed under the MIT License. These Terms govern the online features of the Service, including accounts, credits and Auto-occlude.</p>
 
   <h2>5. credits</h2>
-  <p>Each use of Auto-occlude on one document of up to 150 pages consumes one credit. Credits have no cash value and are not transferable. Credits included with a subscription expire at the end of each monthly period. Purchased credit packs do not expire while your account remains active.</p>
+  <p>Auto-occlude is measured in pages. Each page processed consumes one page credit; pages are counted as they are completed. Page credits have no cash value and are not transferable. Page credits included with a subscription expire at the end of each monthly period. Purchased page credits do not expire while your account remains active.</p>
 
   <h2>6. subscriptions and payment</h2>
   <p>Subscriptions are billed in advance and renew automatically at the end of each period until cancelled. You may cancel at any time; cancellation takes effect at the end of the current period. Except where required by law, all fees are non-refundable. We may change prices with notice, effective at your next renewal. You are responsible for applicable taxes.</p>
