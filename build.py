@@ -7,7 +7,7 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 ANKIWEB = "https://ankiweb.net/shared/info/783821131"
 GITHUB = "https://github.com/pdf-occlusion/anki-pdf-occlusion"
-HELP = GITHUB + "/issues"
+HELP = "mailto:pdf-occlusion-support@googlegroups.com"
 
 HEAD = """<!doctype html>
 <html lang="en">
@@ -31,7 +31,7 @@ HEAD = """<!doctype html>
 <main>
 """
 
-NAV = [("ankiweb", ANKIWEB, None), ("github", GITHUB, None),
+NAV = [("ankiweb", ANKIWEB, None),
        ("pricing", "/pricing/", "pricing"), ("account", "/account/", "account")]
 
 FOOT = f"""</main>
@@ -90,8 +90,8 @@ page("index.html", "pdf occlusion",
      body=top("pdf occlusion", small=False) + f"""
 <div class="badges">
   <a class="badge" href="{ANKIWEB}"><span class="badge-k">add-on code</span><span class="badge-v">783821131</span></a>
-  <a class="badge" href="https://apps.ankiweb.net"><span class="badge-k">anki</span><span class="badge-v">23.10+</span></a>
-  <a class="badge" href="{GITHUB}/blob/main/LICENSE"><span class="badge-k">license</span><span class="badge-v">MIT</span></a>
+  <span class="badge"><span class="badge-k">anki</span><span class="badge-v">23.10+</span></span>
+  <span class="badge"><span class="badge-k">license</span><span class="badge-v">MIT</span></span>
 </div>
 
 <p class="lede">press auto-occlude and every label, term and key phrase in your pdf is boxed for you. check it over, then make the cards.</p>
@@ -129,7 +129,7 @@ page("index.html", "pdf occlusion",
 """)
 
 # ------------------------------------------------------------------ pricing
-page("pricing/index.html", "pricing, pdf occlusion",
+page("pricing/index.html", "pricing",
      "Your first PDF is free. Then $14.99 a month for 60 PDFs, $149.90 a year, or 10 PDFs for $4.99.",
      body=top("pricing", "pricing") + f"""
 <p class="lede">one pdf of up to 150 pages is one use of auto-occlude. the add-on itself is free.</p>
@@ -187,7 +187,7 @@ for (const b of document.querySelectorAll("[data-buy]")) {
 </script>""")
 
 # ------------------------------------------------------------------ account
-page("account/index.html", "account, pdf occlusion", "Your PDFs, plan and linked Anki installs.",
+page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.",
      body=top("account", "account") + f"""
 <div id="signed-out" class="hidden">
   <p class="lede">sign in to see your pdfs and link the add-on.</p>
@@ -305,7 +305,7 @@ $("unlink").addEventListener("click", async () => {
 </script>""")
 
 # ------------------------------------------------------------------ link
-page("link/index.html", "link anki, pdf occlusion", "Link the PDF Occlusion add-on to your account.",
+page("link/index.html", "link anki", "Link the PDF Occlusion add-on to your account.",
      body=top("link anki") + f"""
 <div id="step-code">
   <p class="lede">the code anki is showing</p>
@@ -349,7 +349,7 @@ $("approve").addEventListener("click", async () => {
 </script>""")
 
 # ------------------------------------------------------------------ privacy
-page("privacy/index.html", "privacy, pdf occlusion", "Privacy policy for PDF Occlusion.",
+page("privacy/index.html", "privacy", "Privacy policy for PDF Occlusion.",
      body=top("privacy") + f"""
 <div class="prose">
   <p class="muted center" style="margin-top:14px">effective november 7, 2026</p>
@@ -394,12 +394,12 @@ page("privacy/index.html", "privacy, pdf occlusion", "Privacy policy for PDF Occ
   <p>We may update this policy from time to time. Changes take effect when posted on this page with a new effective date. Your continued use of the Service after that date constitutes acceptance of the updated policy.</p>
 
   <h2>12. contact</h2>
-  <p>Questions about this policy may be submitted through the <a href="{HELP}">help page</a>.</p>
+  <p>Questions about this policy may be submitted to <a href="{HELP}">pdf-occlusion-support@googlegroups.com</a>.</p>
 </div>
 """)
 
 # ------------------------------------------------------------------ terms
-page("terms/index.html", "terms, pdf occlusion", "Terms of service for PDF Occlusion.",
+page("terms/index.html", "terms", "Terms of service for PDF Occlusion.",
      body=top("terms") + f"""
 <div class="prose">
   <p class="muted center" style="margin-top:14px">effective november 7, 2026</p>
@@ -453,6 +453,6 @@ page("terms/index.html", "terms, pdf occlusion", "Terms of service for PDF Occlu
   <p>We may modify these Terms at any time. Changes take effect when posted on this page with a new effective date. Your continued use of the Service after that date constitutes acceptance of the modified Terms.</p>
 
   <h2>17. contact</h2>
-  <p>Questions about these Terms may be submitted through the <a href="{HELP}">help page</a>.</p>
+  <p>Questions about these Terms may be submitted to <a href="{HELP}">pdf-occlusion-support@googlegroups.com</a>.</p>
 </div>
 """)
