@@ -211,7 +211,7 @@ page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.
     <dl class="kv">
       <dt>plan</dt><dd id="plan">none</dd>
       <dt>this month</dt><dd id="month"></dd>
-      <dt>packs</dt><dd id="packs"></dd>
+      <dt>extra pdfs</dt><dd id="packs"></dd>
     </dl>
     <div class="row">
       <a class="btn primary" href="/pricing/" id="upgrade">see pricing</a>
