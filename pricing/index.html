@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>pricing, pdf occlusion</title>
-<meta name="description" content="The add-on is free. Auto-occlude: one free lecture, then $14.99 a month for 60 lectures, or 10 lectures for $4.99.">
+<meta name="description" content="Your first PDF is free. Then $14.99 a month for 60 PDFs, $149.90 a year, or 10 PDFs for $4.99.">
 <meta property="og:title" content="pdf occlusion">
 <meta property="og:description" content="An Anki add-on that turns lecture PDFs into image occlusion cards.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
@@ -18,6 +18,7 @@
 </head>
 <body>
 <main>
+<a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; back</a>
 <div class="top small">
   <a href="/" aria-label="pdf occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
   <h1>pricing</h1>
@@ -29,24 +30,24 @@
   </nav>
 </div>
 
-<p class="lede">the add-on is free. these are for auto-occlude, where one lecture is one pdf of up to 150 slides.</p>
+<p class="lede">one pdf of up to 150 pages is one use of auto-occlude. the add-on itself is free.</p>
 
 <div class="panel" style="margin-top:30px">
   <ul class="plain price-list">
     <li>
-      <div><div class="name">first lecture</div><div class="what">to see how it does on your slides</div></div>
+      <div><div class="name">first pdf</div><div class="what">on us</div></div>
       <div class="amount">free</div>
     </li>
     <li>
-      <div><div class="name">monthly</div><div class="what">60 lectures a month, about 15 a week</div></div>
+      <div><div class="name">monthly</div><div class="what">60 pdfs a month</div></div>
       <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">yearly</div><div class="what">the same, two months cheaper</div></div>
+      <div><div class="name">yearly</div><div class="what">60 pdfs a month, two months cheaper</div></div>
       <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">10 lectures</div><div class="what">no expiry, used after a plan's lectures run out</div></div>
+      <div><div class="name">10 pdfs</div><div class="what">no expiry</div></div>
       <div class="row" style="margin:0"><span class="amount">$4.99</span><button data-buy="pack10">buy</button></div>
     </li>
   </ul>
@@ -54,11 +55,10 @@
 <p class="error hidden center" id="buy-error" role="alert"></p>
 
 <section>
-  <h2>good to know</h2>
   <ul class="dots">
-    <li>Boxing by hand, Detect and cloze cards are always free.</li>
-    <li>A plan's lectures reset each month. Cancel any time from your account; it runs to the end of what you paid for.</li>
-    <li>Payments go through Stripe. Slides are not kept after they are occluded; the <a href="/privacy/">privacy page</a> has the details.</li>
+    <li>A plan's pdfs reset each month. Packs are used once they run out.</li>
+    <li>Cancel any time from your account. The plan runs to the end of what you paid for.</li>
+    <li>Boxing by hand is always free.</li>
   </ul>
 </section>
 </main>

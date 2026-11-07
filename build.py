@@ -52,7 +52,8 @@ def top(name, current=None, small=True):
     links = "\n    ".join(
         f'<a href="{href}"{" aria-current=\"page\"" if key and key == current else ""}>{label}</a>'
         for label, href, key in NAV)
-    return f"""<div class="top{' small' if small else ''}">
+    back = "" if not small else '<a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; back</a>\n'
+    return back + f"""<div class="top{' small' if small else ''}">
   <a href="/" aria-label="pdf occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
   <h1>{name}</h1>
   <nav class="links" aria-label="Main">
@@ -78,8 +79,14 @@ G_ICON = ('<svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill
           '<path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>')
 
 # ------------------------------------------------------------------ home
+PRICES = f"""<div class="panel prices">
+  <div><div class="amount">free</div><div class="what">your first pdf</div></div>
+  <div><div class="amount">$14.99</div><div class="what">a month for 60 pdfs</div></div>
+  <div><div class="amount">$4.99</div><div class="what">10 pdfs, no expiry</div></div>
+</div>"""
+
 page("index.html", "pdf occlusion",
-     "An Anki add-on that turns lecture PDFs into image occlusion cards.",
+     "Auto-occlude boxes every label, term and key phrase in a PDF for you, inside Anki. Your first PDF is free.",
      body=top("pdf occlusion", small=False) + f"""
 <div class="badges">
   <a class="badge" href="{ANKIWEB}"><span class="badge-k">add-on code</span><span class="badge-v">783821131</span></a>
@@ -87,47 +94,62 @@ page("index.html", "pdf occlusion",
   <a class="badge" href="{GITHUB}/blob/main/LICENSE"><span class="badge-k">license</span><span class="badge-v">MIT</span></a>
 </div>
 
-<p class="lede">an anki add-on that turns lecture pdfs into image occlusion cards.</p>
+<p class="lede">press auto-occlude and every label, term and key phrase in your pdf is boxed for you. check it over, then make the cards.</p>
+
+<div style="margin-top:26px">{PRICES}</div>
+<div class="row center"><a class="btn primary" href="{ANKIWEB}">get the add-on</a><a class="btn" href="/pricing/">pricing</a></div>
 
 <div class="panel demo">
-  <img src="/assets/demo.gif" width="840" height="585" alt="The add-on open on a lecture: boxes drawn over key phrases, Detect boxing every label on a diagram, and the card that comes out">
+  <img src="/assets/demo.gif" width="840" height="585" alt="PDF Occlusion open in Anki with boxes placed over the labels of an anatomy diagram">
 </div>
 
 <section>
-  <h2>making cards</h2>
-  <p>Open a lecture's slides in Anki and drag a box over anything you want to learn, or drag over a whole diagram and let Detect box every label in it. Group boxes that belong together, attach the notes PDF, and create every card at once. Each card shows its own slide, with the notes and slides a click away.</p>
+  <h2>anything in a pdf</h2>
+  <ul class="uses">
+    <li>lecture slides</li>
+    <li>anatomy and histology atlases</li>
+    <li>textbook figures and tables</li>
+    <li>vocabulary lists and character charts</li>
+    <li>maps and flags</li>
+    <li>pathways and flowcharts</li>
+    <li>formula and reference sheets</li>
+    <li>board and licensing exam prep</li>
+  </ul>
 </section>
 
 <section>
-  <h2>auto-occlude</h2>
-  <p>For lecture-heavy weeks, Auto-occlude does the first pass for you. Claude reads each slide and boxes what is worth learning; you look it over, change what you want, and make the cards.</p>
-  <p>You decide how it occludes: every diagram label or only the ones the lecture is about, key phrases or whole bullets, numbers and doses, bold or red text, tables by cell or row, flowcharts step by step, which slides to skip, and your own instructions in plain words. The add-on remembers your choices for every lecture.</p>
-  <p>The add-on is free. Your first lecture with Auto-occlude is too, and after that it is <a href="/pricing/">$14.99 a month</a> for 60 lectures.</p>
+  <h2>your way of occluding</h2>
+  <p>Every label on a figure or only the important ones. Key phrases or whole lines. Numbers and doses. Bold or colored text. Tables by cell, row or column. Pathways one step at a time. Pages to skip. Your own instructions, in plain words. Set it once and every pdf follows.</p>
+</section>
+
+<section>
+  <h2>still yours to edit</h2>
+  <p>Every box can be moved, grouped or deleted before a single card is made, and boxing by hand is always free.</p>
 </section>
 """)
 
 # ------------------------------------------------------------------ pricing
 page("pricing/index.html", "pricing, pdf occlusion",
-     "The add-on is free. Auto-occlude: one free lecture, then $14.99 a month for 60 lectures, or 10 lectures for $4.99.",
+     "Your first PDF is free. Then $14.99 a month for 60 PDFs, $149.90 a year, or 10 PDFs for $4.99.",
      body=top("pricing", "pricing") + f"""
-<p class="lede">the add-on is free. these are for auto-occlude, where one lecture is one pdf of up to 150 slides.</p>
+<p class="lede">one pdf of up to 150 pages is one use of auto-occlude. the add-on itself is free.</p>
 
 <div class="panel" style="margin-top:30px">
   <ul class="plain price-list">
     <li>
-      <div><div class="name">first lecture</div><div class="what">to see how it does on your slides</div></div>
+      <div><div class="name">first pdf</div><div class="what">on us</div></div>
       <div class="amount">free</div>
     </li>
     <li>
-      <div><div class="name">monthly</div><div class="what">60 lectures a month, about 15 a week</div></div>
+      <div><div class="name">monthly</div><div class="what">60 pdfs a month</div></div>
       <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">yearly</div><div class="what">the same, two months cheaper</div></div>
+      <div><div class="name">yearly</div><div class="what">60 pdfs a month, two months cheaper</div></div>
       <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">10 lectures</div><div class="what">no expiry, used after a plan's lectures run out</div></div>
+      <div><div class="name">10 pdfs</div><div class="what">no expiry</div></div>
       <div class="row" style="margin:0"><span class="amount">$4.99</span><button data-buy="pack10">buy</button></div>
     </li>
   </ul>
@@ -135,11 +157,10 @@ page("pricing/index.html", "pricing, pdf occlusion",
 <p class="error hidden center" id="buy-error" role="alert"></p>
 
 <section>
-  <h2>good to know</h2>
   <ul class="dots">
-    <li>Boxing by hand, Detect and cloze cards are always free.</li>
-    <li>A plan's lectures reset each month. Cancel any time from your account; it runs to the end of what you paid for.</li>
-    <li>Payments go through Stripe. Slides are not kept after they are occluded; the <a href="/privacy/">privacy page</a> has the details.</li>
+    <li>A plan's pdfs reset each month. Packs are used once they run out.</li>
+    <li>Cancel any time from your account. The plan runs to the end of what you paid for.</li>
+    <li>Boxing by hand is always free.</li>
   </ul>
 </section>
 """, script="""<script type="module">
@@ -166,10 +187,10 @@ for (const b of document.querySelectorAll("[data-buy]")) {
 </script>""")
 
 # ------------------------------------------------------------------ account
-page("account/index.html", "account, pdf occlusion", "Your lectures, plan and linked Anki installs.",
+page("account/index.html", "account, pdf occlusion", "Your PDFs, plan and linked Anki installs.",
      body=top("account", "account") + f"""
 <div id="signed-out" class="hidden">
-  <p class="lede">sign in to see your lectures and link the add-on.</p>
+  <p class="lede">sign in to see your pdfs and link the add-on.</p>
   <div class="row center" style="margin-top:22px"><button id="sign-in">{{G_ICON}}sign in with google</button></div>
 </div>
 
@@ -179,7 +200,7 @@ page("account/index.html", "account, pdf occlusion", "Your lectures, plan and li
 
   <div class="panel" style="margin-top:26px">
     <div class="left" id="left">0</div>
-    <div class="muted" id="left-note">lectures left</div>
+    <div class="muted" id="left-note">pdfs left</div>
     <dl class="kv">
       <dt>plan</dt><dd id="plan">none</dd>
       <dt>this month</dt><dd id="month"></dd>
@@ -187,7 +208,7 @@ page("account/index.html", "account, pdf occlusion", "Your lectures, plan and li
     </dl>
     <div class="row">
       <a class="btn primary" href="/pricing/" id="upgrade">see pricing</a>
-      <button id="pack">buy 10 lectures</button>
+      <button id="pack">buy 10 pdfs</button>
       <button class="hidden" id="billing">manage billing</button>
     </div>
   </div>
@@ -200,7 +221,7 @@ page("account/index.html", "account, pdf occlusion", "Your lectures, plan and li
   </div>
 
   <div class="panel">
-    <h3>recent lectures</h3>
+    <h3>recent pdfs</h3>
     <ul class="plain list" id="jobs"></ul>
     <p class="muted small hidden" id="no-jobs">nothing occluded yet</p>
   </div>
@@ -222,15 +243,15 @@ $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message
 $("sign-out").addEventListener("click", () => signOut());
 const paid = new URLSearchParams(location.search).get("paid");
 if (paid) {
-  $("paid").textContent = paid === "pack10" ? "thanks, 10 lectures were added." : "thanks, your plan is active.";
+  $("paid").textContent = paid === "pack10" ? "thanks, 10 pdfs were added." : "thanks, your plan is active.";
   $("paid").classList.remove("hidden");
 }
 async function load() {
   const me = await api("/v1/me", { user });
   $("who").textContent = me.email || "";
   $("left").textContent = me.lectures_left;
-  $("left-note").textContent = me.lectures_left === 1 ? "lecture left" : "lectures left";
-  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? "free lecture unused" : "none";
+  $("left-note").textContent = me.lectures_left === 1 ? "pdf left" : "pdfs left";
+  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? "free pdf unused" : "none";
   $("month").textContent = me.plan ? `${me.plan_used} of ${me.plan_allowance} used` : "no plan";
   $("packs").textContent = me.pack_credits ? `${me.pack_credits} left` : "none";
   $("upgrade").classList.toggle("hidden", !!me.plan);
@@ -249,8 +270,8 @@ async function load() {
   for (const j of me.jobs) {
     const li = document.createElement("li");
     li.innerHTML = "<span></span><span></span>";
-    li.children[0].textContent = j.lecture || "Untitled lecture";
-    li.children[1].textContent = `${j.slides_total} slides, ${when(j.created_at)}`;
+    li.children[0].textContent = j.lecture || "Untitled pdf";
+    li.children[1].textContent = `${j.slides_total} pages, ${when(j.created_at)}`;
     jobs.append(li);
   }
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
@@ -328,47 +349,110 @@ $("approve").addEventListener("click", async () => {
 </script>""")
 
 # ------------------------------------------------------------------ privacy
-page("privacy/index.html", "privacy, pdf occlusion", "What PDF Occlusion collects and why.",
-     body=top("privacy") + """
+page("privacy/index.html", "privacy, pdf occlusion", "Privacy policy for PDF Occlusion.",
+     body=top("privacy") + f"""
 <div class="prose">
-  <p class="muted center" style="margin-top:14px">last updated november 7, 2026</p>
-  <h2>the add-on</h2>
-  <p>The add-on runs inside Anki on your computer. It reads your PDFs, draws boxes and makes cards locally. Without Auto-occlude it sends nothing anywhere.</p>
-  <h2>auto-occlude</h2>
-  <p>When you run Auto-occlude, the add-on sends the slides you chose to our server: an image of each slide, the text found on it with its position, the lecture's name, the settings you picked and, if you attached one, the text of the lecture notes. The server passes them to Anthropic's Claude model, which decides where the boxes go, and returns the result to the add-on.</p>
+  <p class="muted center" style="margin-top:14px">effective november 7, 2026</p>
+
+  <h2>1. scope</h2>
+  <p>This Privacy Policy describes how PDF Occlusion ("we", "us" or "our") collects, uses and discloses information in connection with this website, the PDF Occlusion add-on and the Auto-occlude service (together, the "Service"). By using the Service you acknowledge the practices described in this policy.</p>
+
+  <h2>2. information we collect</h2>
   <ul>
-    <li>We do not store slide images, slide text or notes. They exist on our server only while the request is being handled.</li>
-    <li>Anthropic processes them under its commercial terms, which do not allow using them to train its models.</li>
-    <li>For each run we keep the lecture's name, the number of slides and the amount of model use, so you can see your history and we can count credits.</li>
+    <li><b>Account information.</b> When you sign in, we receive your email address and an account identifier from the sign-in provider you choose.</li>
+    <li><b>Submitted content.</b> When you use Auto-occlude, the add-on transmits images of the pages you select, the text found on them, the settings you choose and any notes you attach ("Submitted Content").</li>
+    <li><b>Usage records.</b> For each use of Auto-occlude we record the document name, the number of pages, the date and the credits consumed.</li>
+    <li><b>Installation identifiers.</b> Linking the add-on to your account creates a key stored on your device. We retain only a one-way fingerprint of that key.</li>
+    <li><b>Payment information.</b> Payments are processed by a third-party payment processor. We do not receive or store full payment card numbers. We retain the customer and transaction identifiers needed to provide what you purchased.</li>
   </ul>
-  <h2>your account</h2>
-  <p>You sign in with Google through Firebase Authentication. We keep your email address and a Google account identifier. Linking the add-on stores a random key on your computer; we keep only a fingerprint of it, and you can sign out every install from your account page.</p>
-  <h2>payments</h2>
-  <p>Payments are handled by Stripe. We never see your card number. We keep the Stripe customer and subscription identifiers needed to give you the lectures you paid for.</p>
-  <h2>deleting your data</h2>
-  <p>Delete your account from the <a href="/account/">account page</a>. That removes your account, your linked installs and your history right away, and cancels any plan. Stripe keeps its own payment records as the law requires.</p>
+
+  <h2>3. how we use information</h2>
+  <p>We use information to provide, operate and maintain the Service; to process transactions and account for credits; to authenticate users and linked installations; to detect and prevent fraud, abuse and security incidents; to communicate with you about your account; and to comply with legal obligations.</p>
+
+  <h2>4. submitted content</h2>
+  <p>Submitted Content is processed solely to provide the Service to you. It is not retained after your request has been completed, it is not sold, and it is not used to train machine learning models. You remain responsible for ensuring that you have the right to submit it.</p>
+
+  <h2>5. disclosure of information</h2>
+  <p>We do not sell or rent personal information. We disclose information only (a) to service providers that host, authenticate, process payments or otherwise perform services on our behalf, subject to obligations of confidentiality; (b) where required by law, regulation, legal process or governmental request; (c) to protect the rights, property or safety of the Service, its users or others; (d) in connection with a merger, acquisition or sale of assets; or (e) with your consent.</p>
+
+  <h2>6. retention</h2>
+  <p>Account information and usage records are retained for as long as your account is active. When you delete your account, they are deleted, except where retention is required by law or by our payment processor.</p>
+
+  <h2>7. security</h2>
+  <p>We use reasonable administrative, technical and organizational measures to protect information. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
+
+  <h2>8. your choices and rights</h2>
+  <p>You may sign out linked installations or delete your account at any time from the <a href="/account/">account page</a>. Depending on where you live, you may have additional rights to access, correct, port, restrict or object to the processing of your personal information. To exercise them, contact us as described below.</p>
+
+  <h2>9. children</h2>
+  <p>The Service is not directed to children under 13, and we do not knowingly collect personal information from them. If you believe a child has provided us information, contact us and we will delete it.</p>
+
+  <h2>10. international users</h2>
+  <p>The Service is operated from the United States. By using it, you consent to the transfer and processing of your information in the United States, where data protection laws may differ from those of your country.</p>
+
+  <h2>11. changes</h2>
+  <p>We may update this policy from time to time. Changes take effect when posted on this page with a new effective date. Your continued use of the Service after that date constitutes acceptance of the updated policy.</p>
+
+  <h2>12. contact</h2>
+  <p>Questions about this policy may be submitted through the <a href="{HELP}">help page</a>.</p>
 </div>
 """)
 
 # ------------------------------------------------------------------ terms
-page("terms/index.html", "terms, pdf occlusion", "The terms for using PDF Occlusion's Auto-occlude service.",
+page("terms/index.html", "terms, pdf occlusion", "Terms of service for PDF Occlusion.",
      body=top("terms") + f"""
 <div class="prose">
-  <p class="muted center" style="margin-top:14px">last updated november 7, 2026</p>
-  <h2>what you get</h2>
-  <p>Auto-occlude places occlusion boxes on your lecture slides as a first draft. It can miss things or box things you would not have. Check every slide before you create cards.</p>
-  <h2>your material</h2>
-  <p>Only send slides you are allowed to use for your own study. You keep every right to your slides and cards.</p>
-  <h2>credits and plans</h2>
-  <ul>
-    <li>One run of Auto-occlude on one lecture, up to 150 slides, uses one credit.</li>
-    <li>Plan lectures reset each month and do not carry over. Lecture packs do not expire.</li>
-    <li>A run that fails before any boxes come back can be retried. If a credit was used without a result, report it on the <a href="{HELP}">help page</a>.</li>
-    <li>You can cancel a plan at any time. It stays active until the end of the period already paid.</li>
-  </ul>
-  <h2>fair use</h2>
-  <p>Auto-occlude is for occluding lecture slides. Using it for anything else, or sharing an account, can end your access.</p>
-  <h2>changes</h2>
-  <p>If these terms or the prices change, we will say so on this site before the change applies to you.</p>
+  <p class="muted center" style="margin-top:14px">effective november 7, 2026</p>
+
+  <h2>1. acceptance</h2>
+  <p>These Terms of Service (the "Terms") govern your access to and use of this website, the PDF Occlusion add-on and the Auto-occlude service (together, the "Service"). By using the Service you agree to these Terms. If you do not agree, do not use the Service.</p>
+
+  <h2>2. eligibility</h2>
+  <p>You must be at least 13 years old to use the Service, and old enough to form a binding contract where you live to make a purchase.</p>
+
+  <h2>3. accounts</h2>
+  <p>You are responsible for your account, for keeping your sign-in and linked installations secure, and for all activity under your account. Accounts are for one person and may not be shared, sold or transferred.</p>
+
+  <h2>4. the add-on</h2>
+  <p>The add-on's source code is licensed under the MIT License. These Terms govern the online features of the Service, including accounts, credits and Auto-occlude.</p>
+
+  <h2>5. credits</h2>
+  <p>Each use of Auto-occlude on one document of up to 150 pages consumes one credit. Credits have no cash value and are not transferable. Credits included with a subscription expire at the end of each monthly period. Purchased credit packs do not expire while your account remains active.</p>
+
+  <h2>6. subscriptions and payment</h2>
+  <p>Subscriptions are billed in advance and renew automatically at the end of each period until cancelled. You may cancel at any time; cancellation takes effect at the end of the current period. Except where required by law, all fees are non-refundable. We may change prices with notice, effective at your next renewal. You are responsible for applicable taxes.</p>
+
+  <h2>7. your content</h2>
+  <p>You retain all rights to the documents and other material you submit. You grant us a limited, non-exclusive license to process that material solely to provide the Service to you. You represent that you have all rights necessary to submit it and that doing so does not violate any law or the rights of any third party.</p>
+
+  <h2>8. acceptable use</h2>
+  <p>You agree not to: use the Service unlawfully or to infringe the rights of others; submit material you are not entitled to use; interfere with, overload or attempt to gain unauthorized access to the Service; circumvent usage limits or credit accounting; access the Service by automated means other than the add-on; or resell or redistribute the Service.</p>
+
+  <h2>9. output</h2>
+  <p>Occlusions produced by the Service are generated automatically and may be incomplete or inaccurate. You are responsible for reviewing them before use. Nothing produced by the Service is professional, medical, legal or other advice.</p>
+
+  <h2>10. intellectual property</h2>
+  <p>Except for the add-on source code and your content, the Service and all related materials are owned by us and protected by law. No rights are granted other than those expressly stated in these Terms.</p>
+
+  <h2>11. suspension and termination</h2>
+  <p>We may suspend or terminate your access to the Service at any time if you breach these Terms or if required by law. You may stop using the Service and delete your account at any time.</p>
+
+  <h2>12. disclaimer of warranties</h2>
+  <p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY AND NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE OR SECURE.</p>
+
+  <h2>13. limitation of liability</h2>
+  <p>TO THE FULLEST EXTENT PERMITTED BY LAW, WE WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR PUNITIVE DAMAGES, OR FOR ANY LOSS OF DATA, PROFITS OR GOODWILL, ARISING FROM OR RELATED TO THE SERVICE. OUR TOTAL LIABILITY FOR ANY CLAIM WILL NOT EXCEED THE AMOUNT YOU PAID US IN THE TWELVE MONTHS BEFORE THE CLAIM AROSE.</p>
+
+  <h2>14. indemnification</h2>
+  <p>You agree to indemnify and hold us harmless from any claims, losses and expenses, including reasonable legal fees, arising from your use of the Service, your content or your breach of these Terms.</p>
+
+  <h2>15. general</h2>
+  <p>These Terms are governed by the laws of the United States and the applicable state, without regard to conflict-of-law principles. If any provision is found unenforceable, the remainder stays in effect. Our failure to enforce a provision is not a waiver. These Terms, together with the Privacy Policy, are the entire agreement between you and us regarding the Service.</p>
+
+  <h2>16. changes</h2>
+  <p>We may modify these Terms at any time. Changes take effect when posted on this page with a new effective date. Your continued use of the Service after that date constitutes acceptance of the modified Terms.</p>
+
+  <h2>17. contact</h2>
+  <p>Questions about these Terms may be submitted through the <a href="{HELP}">help page</a>.</p>
 </div>
 """)
