@@ -50,7 +50,7 @@ FOOT = """
       <a href="/privacy/">Privacy</a>
       <a href="/terms/">Terms</a>
       <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion">Source</a>
-      <a href="mailto:ravi.bandaru@northwestern.edu">Contact</a>
+      <a href="mailto:ravi14.bandaru@gmail.com">Contact</a>
     </nav>
   </div>
 </footer>
@@ -358,7 +358,7 @@ page("privacy/index.html", "Privacy, PDF Occlusion", "What PDF Occlusion collect
     <h2>Payments</h2>
     <p>Payments are handled by Stripe. We never see your card number. We keep the Stripe customer and subscription identifiers needed to give you the lectures you paid for.</p>
     <h2>Deleting your data</h2>
-    <p>Email <a href="mailto:ravi.bandaru@northwestern.edu">ravi.bandaru@northwestern.edu</a> and we will delete your account and its history.</p>
+    <p>Ask through the Contact link below and we will delete your account and its history.</p>
   </div>
 </main>
 """)
@@ -383,7 +383,7 @@ page("terms/index.html", "Terms, PDF Occlusion", "The terms for using PDF Occlus
     <p>Auto-occlude is for occluding lecture slides. Using it for anything else, or sharing an account, can end your access.</p>
     <h2>Changes</h2>
     <p>If these terms or the prices change, we will say so on this site before the change applies to you.</p>
-    <p>Questions: <a href="mailto:ravi.bandaru@northwestern.edu">ravi.bandaru@northwestern.edu</a></p>
+    <p>Questions: <a href="mailto:ravi14.bandaru@gmail.com">ravi14.bandaru@gmail.com</a></p>
   </div>
 </main>
 """)

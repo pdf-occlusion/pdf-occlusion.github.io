@@ -5,4 +5,4 @@
 
 ## Contact
 
-- Ravi Bandaru: ravi.bandaru@northwestern.edu
+- Ravi Bandaru: ravi14.bandaru@gmail.com
