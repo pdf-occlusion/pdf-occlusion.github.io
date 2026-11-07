@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing, PDF Occlusion</title>
+<meta name="description" content="One free lecture, then a monthly plan for about 15 lectures a week, or lecture packs that never expire.">
+<meta property="og:title" content="PDF Occlusion">
+<meta property="og:description" content="Lecture PDFs into Anki image occlusion cards. A whole lecture, occluded in a minute.">
+<meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
+<meta property="og:url" content="https://pdf-occlusion.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/assets/logo.svg" alt="" width="26" height="26">PDF Occlusion</a>
+    <nav class="nav" aria-label="Main">
+      <a class="hide-s" href="/#how">How it works</a>
+      <a href="/pricing/" aria-current="page">Pricing</a>
+      <a href="/account/">Account</a>
+      <a class="btn btn-primary btn-small" href="https://ankiweb.net/shared/info/783821131">Get the add-on</a>
+    </nav>
+  </div>
+</header>
+
+<main class="app">
+  <div class="wrap">
+    <h1>Pricing</h1>
+    <p class="lede" style="margin-top:1rem">Your first lecture is free. After that, one auto-occluded lecture uses one credit, however many slides it has.</p>
+
+    <div class="plans" style="margin-top:2.6rem">
+      <article class="plan featured">
+        <h3>Semester plan</h3>
+        <div class="billing-switch" role="group" aria-label="Billing period">
+          <button type="button" data-period="monthly" aria-pressed="true">Monthly</button>
+          <button type="button" data-period="yearly" aria-pressed="false">Yearly</button>
+        </div>
+        <div class="price"><strong id="plan-price">$14.99</strong><span class="per" id="plan-per">a month</span></div>
+        <p class="what">60 lectures every month, about 15 a week. Enough for a full block of daily lectures.</p>
+        <ul>
+          <li>Every setting, including your own instructions</li>
+          <li>Uses the lecture notes when you attach them</li>
+          <li>Unused lectures reset each month</li>
+          <li id="plan-note">Cancel any time</li>
+        </ul>
+        <button class="btn btn-primary" data-buy="monthly" id="buy-plan">Choose monthly</button>
+      </article>
+
+      <article class="plan">
+        <h3>Lecture pack</h3>
+        <div class="price"><strong>$4.99</strong><span class="per">once</span></div>
+        <p class="what">10 lectures to use whenever you like. Good for a lighter block, or on top of the plan in a heavy week.</p>
+        <ul>
+          <li>Never expire</li>
+          <li>Stack as many as you need</li>
+          <li>Same settings as the plan</li>
+        </ul>
+        <button class="btn btn-quiet" data-buy="pack10">Buy 10 lectures</button>
+      </article>
+
+      <article class="plan">
+        <h3>Free</h3>
+        <div class="price"><strong>$0</strong></div>
+        <p class="what">The add-on itself, and one auto-occluded lecture to see how it does on your slides.</p>
+        <ul>
+          <li>Manual occlusion, always free</li>
+          <li>Cloze cards from text slides</li>
+          <li>1 auto-occluded lecture</li>
+        </ul>
+        <a class="btn btn-quiet" href="https://ankiweb.net/shared/info/783821131">Get the add-on</a>
+      </article>
+    </div>
+
+    <div class="notice error hidden" id="buy-error" role="alert"></div>
+
+    <section class="faq" style="padding:4rem 0 0">
+      <h2 style="font-size:1.8rem;margin-bottom:1.4rem">Questions</h2>
+      <details><summary>What counts as one lecture?</summary><p>One run of Auto-occlude on one PDF, up to 150 slides. Running it again on the same lecture later uses another credit.</p></details>
+      <details><summary>What if I go over 60 in a month?</summary><p>Lecture packs top up the plan. They are used only after the month's 60 are gone, and whatever is left carries over.</p></details>
+      <details><summary>Do I need the plan to occlude by hand?</summary><p>No. Drawing boxes, grouping, cloze cards and everything else in the add-on stay free. Credits are only for Auto-occlude.</p></details>
+      <details><summary>What happens to my slides?</summary><p>They are sent to the model that places the boxes and are not stored afterwards. Your cards are made in your own Anki collection. The <a href="/privacy/">privacy page</a> has the details.</p></details>
+      <details><summary>Can I cancel?</summary><p>Yes, from your account page, at any time. The plan runs to the end of the period you paid for.</p></details>
+    </section>
+  </div>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>&copy; <span data-year></span> PDF Occlusion</span>
+    <nav aria-label="Footer">
+      <a href="/pricing/">Pricing</a>
+      <a href="/account/">Account</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/terms/">Terms</a>
+      <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion">Source</a>
+      <a href="mailto:ravi.bandaru@northwestern.edu">Contact</a>
+    </nav>
+  </div>
+</footer>
+<script type="module">
+import { watchUser, signIn, api } from "/assets/app.js";
+let user = null;
+watchUser((u) => { user = u; });
+const price = document.getElementById("plan-price"), per = document.getElementById("plan-per");
+const note = document.getElementById("plan-note"), buyPlan = document.getElementById("buy-plan");
+for (const b of document.querySelectorAll(".billing-switch button")) {
+  b.addEventListener("click", () => {
+    for (const x of document.querySelectorAll(".billing-switch button")) x.setAttribute("aria-pressed", String(x === b));
+    const yearly = b.dataset.period === "yearly";
+    price.textContent = yearly ? "$149.90" : "$14.99";
+    per.textContent = yearly ? "a year" : "a month";
+    note.textContent = yearly ? "Two months free compared with monthly" : "Cancel any time";
+    buyPlan.dataset.buy = yearly ? "yearly" : "monthly";
+    buyPlan.textContent = yearly ? "Choose yearly" : "Choose monthly";
+  });
+}
+const err = document.getElementById("buy-error");
+for (const b of document.querySelectorAll("[data-buy]")) {
+  b.addEventListener("click", async () => {
+    err.classList.add("hidden");
+    b.disabled = true;
+    try {
+      if (!user) await signIn();
+      if (!user) { b.disabled = false; return; }
+      const { url } = await api("/v1/checkout", { method: "POST", body: { product: b.dataset.buy }, user });
+      location.href = url;
+    } catch (e) {
+      err.textContent = e.message || "Checkout could not start.";
+      err.classList.remove("hidden");
+      b.disabled = false;
+    }
+  });
+}
+</script>
+</body>
+</html>

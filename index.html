@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PDF Occlusion</title>
+<meta name="description" content="An Anki add-on that turns lecture PDFs into image occlusion cards. Auto-occlude a whole lecture in about a minute, then check the boxes and make the cards.">
+<meta property="og:title" content="PDF Occlusion">
+<meta property="og:description" content="Lecture PDFs into Anki image occlusion cards. A whole lecture, occluded in a minute.">
+<meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
+<meta property="og:url" content="https://pdf-occlusion.github.io/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/"><img src="/assets/logo.svg" alt="" width="26" height="26">PDF Occlusion</a>
+    <nav class="nav" aria-label="Main">
+      <a class="hide-s" href="#how">How it works</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/account/">Account</a>
+      <a class="btn btn-primary btn-small" href="https://ankiweb.net/shared/info/783821131">Get the add-on</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <h1>A whole lecture, occluded in a minute.</h1>
+        <p class="lede">PDF Occlusion is an Anki add-on. Open a lecture's slides, press Auto-occlude, and every label, key phrase and table cell worth knowing gets a box. You look them over, then make the cards.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://ankiweb.net/shared/info/783821131">Get the add-on</a>
+          <a class="btn btn-quiet" href="/pricing/">See pricing</a>
+        </div>
+        <p class="fine">Free to install. Your first lecture is on us.</p>
+      </div>
+      <figure style="margin:0">
+        <div class="slide" id="hero-slide"></div>
+        <figcaption class="slide-caption"><span>Every gray box is a card. The violet one is being asked.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="band" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>From PDF to cards</h2>
+        <p>Everything happens in the add-on you may already use to occlude by hand. Auto-occlude just does the first draft.</p>
+      </div>
+      <ol class="steps">
+        <li><h3>Open the lecture</h3><p>In Anki, Tools, PDF Occlusion. Add the notes PDF too if you have one.</p></li>
+        <li><h3>Auto-occlude</h3><p>Boxes land on the labels, phrases and cells a well-prepared classmate would hide.</p></li>
+        <li><h3>Look it over</h3><p>Drag, regroup or delete any box. Nothing is saved until you say so.</p></li>
+        <li><h3>Create the cards</h3><p>They go into your deck, and you review each one on its own slide.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="tuned">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>It occludes the way you study</h2>
+        <p>Some people hide every label on an anatomy plate. Some only want the ones the lecturer cared about. Tell it once and every lecture follows.</p>
+      </div>
+      <div class="tuned">
+        <div>
+          <div class="panel" id="demo-panel">
+            <div class="row">
+              <div class="row-name" id="lbl-labels">Diagram labels</div>
+              <div class="seg" role="group" aria-labelledby="lbl-labels" data-setting="labels">
+                <button type="button" data-value="all" aria-pressed="true">All labels</button>
+                <button type="button" data-value="relevant" aria-pressed="false">Relevant only</button>
+                <button type="button" data-value="none" aria-pressed="false">None</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-name" id="lbl-text">Bullet text</div>
+              <div class="seg" role="group" aria-labelledby="lbl-text" data-setting="text">
+                <button type="button" data-value="key_phrase" aria-pressed="true">Key phrase</button>
+                <button type="button" data-value="whole_bullet" aria-pressed="false">Whole bullet</button>
+                <button type="button" data-value="skip" aria-pressed="false">Leave alone</button>
+              </div>
+            </div>
+            <div class="count" aria-live="polite"><strong id="demo-count">16</strong><span class="muted">cards on this slide</span></div>
+          </div>
+          <div class="more-settings">
+            Also in the add-on:
+            <ul>
+              <li>Fewer, balanced or more cards</li>
+              <li>Lists as one card or one per item</li>
+              <li>Tables by cell, row or column</li>
+              <li>Slides to skip, like objectives and cases</li>
+              <li>Your own instructions, in plain words</li>
+            </ul>
+          </div>
+        </div>
+        <div class="slide" id="tuned-slide"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band">
+    <div class="wrap facts">
+      <div>
+        <h3>Checked against real cards</h3>
+        <p>Tested on 150 slides a medical student had already occluded by hand, across anatomy, histology, pathology, pharmacology and more. It found about three quarters of what they hid and grouped most of it the same way.</p>
+      </div>
+      <div>
+        <h3>Your collection stays on your computer</h3>
+        <p>The add-on reads the PDF itself and sends only slide images and their text to be occluded. Nothing is kept afterwards, and your cards are made in your own Anki.</p>
+      </div>
+      <div>
+        <h3>Made by a medical student</h3>
+        <p>PDF Occlusion started as the tool one student used to get through slide-heavy blocks. Auto-occlude is the part they wished it had.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-end">
+    <div class="wrap">
+      <h2>Try it on your next lecture.</h2>
+      <div class="actions" style="display:flex;gap:.8rem;flex-wrap:wrap">
+        <a class="btn btn-primary" href="https://ankiweb.net/shared/info/783821131">Get the add-on</a>
+        <a class="btn btn-quiet" href="/pricing/">See pricing</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <span>&copy; <span data-year></span> PDF Occlusion</span>
+    <nav aria-label="Footer">
+      <a href="/pricing/">Pricing</a>
+      <a href="/account/">Account</a>
+      <a href="/privacy/">Privacy</a>
+      <a href="/terms/">Terms</a>
+      <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion">Source</a>
+      <a href="mailto:ravi.bandaru@northwestern.edu">Contact</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module">
+  import "/assets/app.js";
+  import { mountSlide } from "/assets/demo.js";
+
+  const hero = mountSlide(document.getElementById("hero-slide"), { intro: true });
+  // after the masks land, the asked card moves around now and then
+  const order = ["obturator", "supgluteal", "umbilical", "intpudendal", "iliolumbar"];
+  let i = 0;
+  hero.ready.then(() => setTimeout(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setInterval(() => hero.setActive(order[++i % order.length]), 3200);
+  }, 2400));
+
+  const tuned = mountSlide(document.getElementById("tuned-slide"), { intro: false });
+  const count = document.getElementById("demo-count");
+  const state = { labels: "all", text: "key_phrase" };
+  tuned.ready.then((n) => { count.textContent = n; });
+  for (const group of document.querySelectorAll("#demo-panel .seg")) {
+    group.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      for (const x of group.querySelectorAll("button")) x.setAttribute("aria-pressed", String(x === b));
+      state[group.dataset.setting] = b.dataset.value;
+      count.textContent = tuned.apply(state);
+    });
+  }
+</script>
+</body>
+</html>
