@@ -168,3 +168,7 @@ footer a { color: var(--muted); }
   .prices > div + div { border-left: none; border-top: 1px solid var(--line); padding-top: 10px; }
   .uses { grid-template-columns: 1fr; }
 }
+
+/* home: the settings, as small chips */
+.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.chips li { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 0.92rem; color: var(--accent); }

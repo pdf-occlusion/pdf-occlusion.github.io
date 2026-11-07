@@ -31,8 +31,7 @@ HEAD = """<!doctype html>
 <main>
 """
 
-NAV = [("ankiweb", ANKIWEB, None),
-       ("pricing", "/pricing/", "pricing"), ("account", "/account/", "account")]
+NAV = [("pricing", "/pricing/", "pricing"), ("account", "/account/", "account")]
 
 FOOT = f"""</main>
 <footer>
@@ -89,7 +88,7 @@ page("index.html", "pdf occlusion",
      "Auto-occlude boxes every label, term and key phrase in a PDF for you, inside Anki. Your first PDF is free.",
      body=top("pdf occlusion", small=False) + f"""
 <div class="badges">
-  <a class="badge" href="{ANKIWEB}"><span class="badge-k">add-on code</span><span class="badge-v">783821131</span></a>
+  <span class="badge"><span class="badge-k">add-on code</span><span class="badge-v">783821131</span></span>
   <span class="badge"><span class="badge-k">anki</span><span class="badge-v">23.10+</span></span>
   <span class="badge"><span class="badge-k">license</span><span class="badge-v">MIT</span></span>
 </div>
@@ -97,7 +96,6 @@ page("index.html", "pdf occlusion",
 <p class="lede">press auto-occlude and every label, term and key phrase in your pdf is boxed for you. check it over, then make the cards.</p>
 
 <div style="margin-top:26px">{PRICES}</div>
-<div class="row center"><a class="btn primary" href="{ANKIWEB}">get the add-on</a><a class="btn" href="/pricing/">pricing</a></div>
 
 <div class="panel demo">
   <img src="/assets/demo.gif" width="840" height="585" alt="PDF Occlusion open in Anki with boxes placed over the labels of an anatomy diagram">
@@ -118,13 +116,18 @@ page("index.html", "pdf occlusion",
 </section>
 
 <section>
-  <h2>your way of occluding</h2>
-  <p>Every label on a figure or only the important ones. Key phrases or whole lines. Numbers and doses. Bold or colored text. Tables by cell, row or column. Pathways one step at a time. Pages to skip. Your own instructions, in plain words. Set it once and every pdf follows.</p>
-</section>
-
-<section>
-  <h2>still yours to edit</h2>
-  <p>Every box can be moved, grouped or deleted before a single card is made, and boxing by hand is always free.</p>
+  <h2>set it once</h2>
+  <ul class="chips">
+    <li>all labels or key ones</li>
+    <li>key phrases or whole lines</li>
+    <li>numbers and doses</li>
+    <li>bold or colored text</li>
+    <li>tables by cell or row</li>
+    <li>pathways step by step</li>
+    <li>pages to skip</li>
+    <li>your own rules</li>
+  </ul>
+  <p class="muted small" style="margin-top:14px">every box stays editable, and boxing by hand is always free.</p>
 </section>
 """)
 
