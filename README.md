@@ -2,7 +2,3 @@
 
 [![Website](https://img.shields.io/badge/website-pdf--occlusion.github.io-836EAA?style=flat-square)](https://pdf-occlusion.github.io)
 [![Add-on](https://img.shields.io/badge/add--on-anki--pdf--occlusion-836EAA?style=flat-square)](https://github.com/pdf-occlusion/anki-pdf-occlusion)
-
-## Contact
-
-- Ravi Bandaru: ravi14.bandaru@gmail.com

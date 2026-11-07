@@ -50,7 +50,7 @@ FOOT = """
       <a href="/privacy/">Privacy</a>
       <a href="/terms/">Terms</a>
       <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion">Source</a>
-      <a href="mailto:ravi14.bandaru@gmail.com">Contact</a>
+      <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion/issues">Help</a>
     </nav>
   </div>
 </footer>
@@ -221,13 +221,18 @@ page("account/index.html", "Account, PDF Occlusion", "Your lectures, plan and li
         <ul class="list" id="jobs"></ul>
         <p class="muted small hidden" id="no-jobs" style="margin-top:.8rem">Nothing occluded yet.</p>
       </div>
-      <div class="actions-row"><button class="btn btn-quiet btn-small" id="sign-out">Sign out</button></div>
+      <div class="actions-row">
+        <button class="btn btn-quiet btn-small" id="sign-out">Sign out</button>
+        <button class="btn btn-quiet btn-small" id="delete">Delete account</button>
+        <button class="btn btn-quiet btn-small hidden" id="delete-yes">Delete my account and history</button>
+        <button class="btn btn-quiet btn-small hidden" id="delete-no">Keep it</button>
+      </div>
       <div class="notice error hidden" id="acct-error" role="alert"></div>
     </div>
   </div>
 </main>
 """, script="""<script type="module">
-import { watchUser, signIn, signOut, api, when } from "/assets/app.js";
+import { watchUser, signIn, signOut, deleteSignIn, api, when } from "/assets/app.js";
 const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
@@ -284,6 +289,17 @@ async function go(path, body) {
 }
 $("pack").addEventListener("click", () => go("/v1/checkout", { product: "pack10" }));
 $("billing").addEventListener("click", () => go("/v1/portal"));
+const asking = (on) => {
+  $("delete").classList.toggle("hidden", on);
+  $("delete-yes").classList.toggle("hidden", !on);
+  $("delete-no").classList.toggle("hidden", !on);
+};
+$("delete").addEventListener("click", () => asking(true));
+$("delete-no").addEventListener("click", () => asking(false));
+$("delete-yes").addEventListener("click", async () => {
+  try { await api("/v1/me/delete", { method: "POST", user }); asking(false); await deleteSignIn(); }
+  catch (e) { err(e.message); }
+});
 $("unlink").addEventListener("click", async () => {
   try { await api("/v1/devices/sign-out", { method: "POST", user }); await load(); } catch (e) { err(e.message); }
 });
@@ -358,7 +374,7 @@ page("privacy/index.html", "Privacy, PDF Occlusion", "What PDF Occlusion collect
     <h2>Payments</h2>
     <p>Payments are handled by Stripe. We never see your card number. We keep the Stripe customer and subscription identifiers needed to give you the lectures you paid for.</p>
     <h2>Deleting your data</h2>
-    <p>Ask through the Contact link below and we will delete your account and its history.</p>
+    <p>Delete your account from the <a href="/account/">account page</a>. That removes your account, your linked installs and your history right away, and cancels any plan. Stripe keeps its own payment records as the law requires.</p>
   </div>
 </main>
 """)
@@ -376,14 +392,13 @@ page("terms/index.html", "Terms, PDF Occlusion", "The terms for using PDF Occlus
     <ul>
       <li>One run of Auto-occlude on one lecture, up to 150 slides, uses one credit.</li>
       <li>Plan lectures reset each month and do not carry over. Lecture packs do not expire.</li>
-      <li>A run that fails before any boxes come back can be retried; email us if a credit was used without a result.</li>
+      <li>A run that fails before any boxes come back can be retried. If a credit was used without a result, report it on the <a href="https://github.com/pdf-occlusion/anki-pdf-occlusion/issues">help page</a>.</li>
       <li>You can cancel a plan at any time. It stays active until the end of the period already paid.</li>
     </ul>
     <h2>Fair use</h2>
     <p>Auto-occlude is for occluding lecture slides. Using it for anything else, or sharing an account, can end your access.</p>
     <h2>Changes</h2>
     <p>If these terms or the prices change, we will say so on this site before the change applies to you.</p>
-    <p>Questions: <a href="mailto:ravi14.bandaru@gmail.com">ravi14.bandaru@gmail.com</a></p>
   </div>
 </main>
 """)

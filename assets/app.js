@@ -59,6 +59,14 @@ export async function signOut() {
   await lib.signOut(au);
 }
 
+// Removes the Google sign-in itself too. Firebase only allows that soon
+// after signing in, so a stale session just signs out instead.
+export async function deleteSignIn() {
+  const { lib, auth: au } = await auth();
+  try { if (au.currentUser) await lib.deleteUser(au.currentUser); }
+  catch { await lib.signOut(au); }
+}
+
 export async function api(path, { method = "GET", body, user } = {}) {
   const headers = { "content-type": "application/json" };
   if (user) headers.authorization = `Bearer ${await user.getIdToken()}`;
