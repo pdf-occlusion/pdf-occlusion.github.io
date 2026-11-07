@@ -25,7 +25,7 @@ HEAD = """<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css">
+<link rel="stylesheet" href="/assets/site.css?v=CSSVER">
 </head>
 <body>
 <main>
@@ -64,7 +64,9 @@ def top(name, current=None, small=True):
 
 def page(path, title, desc, body, script=""):
     body = body.replace("{G_ICON}", G_ICON)
-    html = HEAD.format(title=title, desc=desc) + body + FOOT.format(script=script)
+    import hashlib
+    css_v = hashlib.sha1(open(os.path.join(HERE, "assets/site.css"), "rb").read()).hexdigest()[:8]
+    html = HEAD.format(title=title, desc=desc).replace("CSSVER", css_v) + body + FOOT.format(script=script)
     out = os.path.join(HERE, path)
     os.makedirs(os.path.dirname(out) or HERE, exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
@@ -101,21 +103,24 @@ page("index.html", "pdf occlusion",
   <img src="/assets/demo.gif" width="840" height="585" alt="PDF Occlusion open in Anki with boxes placed over the labels of an anatomy diagram">
 </div>
 
-<section>
+<section class="center">
   <h2>anything in a pdf</h2>
-  <ul class="uses">
+  <ul class="chips">
     <li>lecture slides</li>
-    <li>anatomy and histology atlases</li>
-    <li>textbook figures and tables</li>
-    <li>vocabulary lists and character charts</li>
-    <li>maps and flags</li>
-    <li>pathways and flowcharts</li>
-    <li>formula and reference sheets</li>
-    <li>board and licensing exam prep</li>
+    <li>anatomy atlases</li>
+    <li>histology</li>
+    <li>textbook figures</li>
+    <li>tables</li>
+    <li>vocabulary lists</li>
+    <li>character charts</li>
+    <li>maps</li>
+    <li>flowcharts</li>
+    <li>formula sheets</li>
+    <li>board prep</li>
   </ul>
 </section>
 
-<section>
+<section class="center">
   <h2>set it once</h2>
   <ul class="chips">
     <li>all labels or key ones</li>
@@ -127,7 +132,6 @@ page("index.html", "pdf occlusion",
     <li>pages to skip</li>
     <li>your own rules</li>
   </ul>
-  <p class="muted small" style="margin-top:14px">every box stays editable, and boxing by hand is always free.</p>
 </section>
 """)
 
@@ -193,7 +197,7 @@ for (const b of document.querySelectorAll("[data-buy]")) {
 page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.",
      body=top("account", "account") + f"""
 <div id="signed-out" class="hidden">
-  <p class="lede">sign in to see your pdfs and link the add-on.</p>
+  <p class="lede">sign in to see your plan and link the add-on.</p>
   <div class="row center" style="margin-top:22px"><button id="sign-in">{{G_ICON}}sign in with google</button></div>
 </div>
 
@@ -224,9 +228,9 @@ page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.
   </div>
 
   <div class="panel">
-    <h3>recent pdfs</h3>
+    <h3>history</h3>
     <ul class="plain list" id="jobs"></ul>
-    <p class="muted small hidden" id="no-jobs">nothing occluded yet</p>
+    <p class="muted small hidden" id="no-jobs">nothing yet</p>
   </div>
 
   <div class="row center" style="margin-top:22px">

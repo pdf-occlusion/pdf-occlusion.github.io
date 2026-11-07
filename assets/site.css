@@ -72,7 +72,8 @@ nav.links a[aria-current] { color: var(--ink); }
 
 .lede { text-align: center; color: var(--accent); max-width: 44ch; margin: 18px auto 0; }
 
-section { margin-top: 44px; }
+section { margin-top: 40px; }
+section.center h2 { text-align: center; margin-bottom: 14px; }
 h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
 p + p { margin-top: 10px; }
 .muted { color: var(--muted); }
@@ -156,19 +157,13 @@ footer a { color: var(--muted); }
 .prices .amount { font-size: 1.5rem; font-weight: 600; color: var(--accent); line-height: 1.2; }
 .prices .what { color: var(--muted); font-size: 0.88rem; }
 
-/* home: what people use it for */
-.uses { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; }
-.uses li { padding-left: 14px; position: relative; }
-.uses li::before { content: ""; position: absolute; left: 0; top: 0.72em; width: 6px; height: 6px; border-radius: 2px; background: #836eaa; }
-
 .prose b { font-weight: 600; }
 
 @media (max-width: 520px) {
   .prices { grid-template-columns: 1fr; gap: 10px; }
   .prices > div + div { border-left: none; border-top: 1px solid var(--line); padding-top: 10px; }
-  .uses { grid-template-columns: 1fr; }
 }
 
 /* home: the settings, as small chips */
-.chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+.chips { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 560px; margin: 0 auto; }
 .chips li { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 0.92rem; color: var(--accent); }
