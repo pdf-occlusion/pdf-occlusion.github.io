@@ -90,5 +90,24 @@ for (const b of document.querySelectorAll("[data-buy]")) {
   });
 }
 </script>
+<script>
+(function () {
+  try {
+    var k = "po-anon", id = localStorage.getItem(k);
+    if (!id) { id = crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now(); localStorage.setItem(k, id); }
+    var api = "https://pdf-occlusion-api.pdf-occlusion.workers.dev/v1/events";
+    var send = function (name, props) {
+      try { navigator.sendBeacon(api, new Blob([JSON.stringify({ anon: id, events: [{ name: name, at: Date.now(), props: props }] })], { type: "text/plain" })); } catch (e) {}
+    };
+    var ref = document.referrer ? new URL(document.referrer).hostname : "";
+    var utm = new URLSearchParams(location.search).get("utm_source") || "";
+    send("page_view", { path: location.pathname, ref: ref === location.hostname ? "" : ref, utm: utm.slice(0, 40) });
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a, button");
+      if (a) send("click", { window: "web", page: location.pathname, button: (a.textContent || a.getAttribute("aria-label") || "").trim().slice(0, 60), href: (a.getAttribute("href") || "").split("?")[0] });
+    }, true);
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

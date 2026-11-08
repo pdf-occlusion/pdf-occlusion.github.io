@@ -33,6 +33,29 @@ HEAD = """<!doctype html>
 
 NAV = [("pricing", "/pricing/", "pricing"), ("account", "/account/", "account")]
 
+# Page views and clicks, for the owner's statistics: a random id kept in this
+# browser, the page's path and where the visitor came from. No query string,
+# so codes in links (/link/?code=) are never sent.
+BEACON = """<script>
+(function () {
+  try {
+    var k = "po-anon", id = localStorage.getItem(k);
+    if (!id) { id = crypto.randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now(); localStorage.setItem(k, id); }
+    var api = "https://pdf-occlusion-api.pdf-occlusion.workers.dev/v1/events";
+    var send = function (name, props) {
+      try { navigator.sendBeacon(api, new Blob([JSON.stringify({ anon: id, events: [{ name: name, at: Date.now(), props: props }] })], { type: "text/plain" })); } catch (e) {}
+    };
+    var ref = document.referrer ? new URL(document.referrer).hostname : "";
+    var utm = new URLSearchParams(location.search).get("utm_source") || "";
+    send("page_view", { path: location.pathname, ref: ref === location.hostname ? "" : ref, utm: utm.slice(0, 40) });
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("a, button");
+      if (a) send("click", { window: "web", page: location.pathname, button: (a.textContent || a.getAttribute("aria-label") || "").trim().slice(0, 60), href: (a.getAttribute("href") || "").split("?")[0] });
+    }, true);
+  } catch (e) {}
+})();
+</script>"""
+
 FOOT = f"""</main>
 <footer>
   <nav aria-label="Footer">
@@ -66,7 +89,7 @@ def page(path, title, desc, body, script=""):
     body = body.replace("{G_ICON}", G_ICON)
     import hashlib
     css_v = hashlib.sha1(open(os.path.join(HERE, "assets/site.css"), "rb").read()).hexdigest()[:8]
-    html = HEAD.format(title=title, desc=desc).replace("CSSVER", css_v) + body + FOOT.format(script=script)
+    html = HEAD.format(title=title, desc=desc).replace("CSSVER", css_v) + body + FOOT.format(script=(script + "\n" + BEACON).strip())
     out = os.path.join(HERE, path)
     os.makedirs(os.path.dirname(out) or HERE, exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
@@ -360,7 +383,7 @@ $("approve").addEventListener("click", async () => {
 page("privacy/index.html", "privacy", "Privacy policy for PDF Occlusion.",
      body=top("privacy") + f"""
 <div class="prose">
-  <p class="muted center" style="margin-top:14px">effective november 7, 2026</p>
+  <p class="muted center" style="margin-top:14px">effective november 9, 2026</p>
 
   <h2>1. scope</h2>
   <p>This Privacy Policy describes how PDF Occlusion ("we", "us" or "our") collects, uses and discloses information in connection with this website, the PDF Occlusion add-on and the Auto-occlude service (together, the "Service"). By using the Service you acknowledge the practices described in this policy.</p>
@@ -371,11 +394,12 @@ page("privacy/index.html", "privacy", "Privacy policy for PDF Occlusion.",
     <li><b>Submitted content.</b> When you use Auto-occlude, the add-on transmits images of the pages you select, the text found on them, the settings you choose and any notes you attach ("Submitted Content").</li>
     <li><b>Usage records.</b> For each use of Auto-occlude we record the document name, the number of pages, the date and the credits consumed.</li>
     <li><b>Installation identifiers.</b> Linking the add-on to your account creates a key stored on your device. We retain only a one-way fingerprint of that key. The add-on also sends a one-way fingerprint of your computer's hardware identifier, which we use to limit free pages to one allowance per computer; the identifier itself never leaves your computer.</li>
+    <li><b>Usage statistics.</b> The add-on reports which of its buttons and features are used, page and card counts, errors, and its own, Anki's and your operating system's versions, tagged with the one-way computer fingerprint described above and, when you are signed in, your account. It does not report page images, file names, card text or anything you type. You can turn this off with the <code>usage_stats</code> setting in the add-on's config. This website records the pages you view, the links and buttons you click and the site that referred you, tagged with a random identifier stored in your browser.</li>
     <li><b>Payment information.</b> Payments are processed by a third-party payment processor. We do not receive or store full payment card numbers. We retain the customer and transaction identifiers needed to provide what you purchased.</li>
   </ul>
 
   <h2>3. how we use information</h2>
-  <p>We use information to provide, operate and maintain the Service; to process transactions and account for credits; to authenticate users and linked installations; to detect and prevent fraud, abuse and security incidents; to communicate with you about your account; and to comply with legal obligations.</p>
+  <p>We use information to provide, operate and maintain the Service; to understand how the Service is used and improve it; to process transactions and account for credits; to authenticate users and linked installations; to detect and prevent fraud, abuse and security incidents; to communicate with you about your account; and to comply with legal obligations.</p>
 
   <h2>4. submitted content</h2>
   <p>Submitted Content is processed solely to provide the Service to you. It is not retained after your request has been completed, it is not sold, and it is not used to train machine learning models. You remain responsible for ensuring that you have the right to submit it.</p>
