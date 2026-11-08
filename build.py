@@ -370,7 +370,7 @@ page("privacy/index.html", "privacy", "Privacy policy for PDF Occlusion.",
     <li><b>Account information.</b> When you sign in, we receive your email address and an account identifier from the sign-in provider you choose.</li>
     <li><b>Submitted content.</b> When you use Auto-occlude, the add-on transmits images of the pages you select, the text found on them, the settings you choose and any notes you attach ("Submitted Content").</li>
     <li><b>Usage records.</b> For each use of Auto-occlude we record the document name, the number of pages, the date and the credits consumed.</li>
-    <li><b>Installation identifiers.</b> Linking the add-on to your account creates a key stored on your device. We retain only a one-way fingerprint of that key.</li>
+    <li><b>Installation identifiers.</b> Linking the add-on to your account creates a key stored on your device. We retain only a one-way fingerprint of that key. The add-on also sends a one-way fingerprint of your computer's hardware identifier, which we use to limit free pages to one allowance per computer; the identifier itself never leaves your computer.</li>
     <li><b>Payment information.</b> Payments are processed by a third-party payment processor. We do not receive or store full payment card numbers. We retain the customer and transaction identifiers needed to provide what you purchased.</li>
   </ul>
 
