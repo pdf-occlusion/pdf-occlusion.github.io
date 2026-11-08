@@ -82,8 +82,8 @@ G_ICON = ('<svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill
 # ------------------------------------------------------------------ home
 PRICES = f"""<div class="panel prices">
   <div><div class="amount">free</div><div class="what">your first 50 pages</div></div>
-  <div><div class="amount">$14.99</div><div class="what">a month for 1,500 pages</div></div>
-  <div><div class="amount">$4.99</div><div class="what">400 pages, no expiry</div></div>
+  <div><div class="amount">$14.99</div><div class="what">a month for 1,000 pages</div></div>
+  <div><div class="amount">$9.99</div><div class="what">400 pages, no expiry</div></div>
 </div>"""
 
 page("index.html", "pdf occlusion",
@@ -137,7 +137,7 @@ page("index.html", "pdf occlusion",
 
 # ------------------------------------------------------------------ pricing
 page("pricing/index.html", "pricing",
-     "Your first 50 pages are free. Then $14.99 a month for 1,500 pages, $149.90 a year, or 400 pages for $4.99.",
+     "Your first 50 pages are free. Then $14.99 a month for 1,000 pages, $149.90 a year, or 400 pages for $9.99.",
      body=top("pricing", "pricing") + f"""
 <p class="lede">auto-occlude is counted in pages. the add-on itself is free.</p>
 
@@ -148,16 +148,16 @@ page("pricing/index.html", "pricing",
       <div class="amount">free</div>
     </li>
     <li>
-      <div><div class="name">monthly</div><div class="what">1,500 pages a month</div></div>
+      <div><div class="name">monthly</div><div class="what">1,000 pages a month</div></div>
       <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">yearly</div><div class="what">1,500 pages a month, two months cheaper</div></div>
+      <div><div class="name">yearly</div><div class="what">1,000 pages a month, two months cheaper</div></div>
       <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">subscribe</button></div>
     </li>
     <li>
       <div><div class="name">400 pages</div><div class="what">no expiry</div></div>
-      <div class="row" style="margin:0"><span class="amount">$4.99</span><button data-buy="pack">buy</button></div>
+      <div class="row" style="margin:0"><span class="amount">$9.99</span><button data-buy="pack">buy</button></div>
     </li>
   </ul>
 </div>
