@@ -72,8 +72,12 @@ $("approve").addEventListener("click", async () => {
   $("approve").disabled = true;
   try {
     await api("/v1/link/approve", { method: "POST", body: { code }, user });
+    window.poTrack?.("link_result", { result: "ok" });
     $("link-in").classList.add("hidden"); $("step-code").classList.add("hidden"); $("done").classList.remove("hidden");
-  } catch (e) { err(e.message); $("approve").disabled = false; }
+  } catch (e) {
+    window.poTrack?.("link_result", { result: "error", message: String(e.message || "").slice(0, 120) });
+    err(e.message); $("approve").disabled = false;
+  }
 });
 </script>
 <script>
@@ -85,6 +89,7 @@ $("approve").addEventListener("click", async () => {
     var send = function (name, props) {
       try { navigator.sendBeacon(api, new Blob([JSON.stringify({ anon: id, events: [{ name: name, at: Date.now(), props: props }] })], { type: "text/plain" })); } catch (e) {}
     };
+    window.poTrack = send;
     var ref = document.referrer ? new URL(document.referrer).hostname : "";
     var utm = new URLSearchParams(location.search).get("utm_source") || "";
     send("page_view", { path: location.pathname, ref: ref === location.hostname ? "" : ref, utm: utm.slice(0, 40) });

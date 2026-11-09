@@ -34,13 +34,28 @@ export async function signIn() {
   const { lib, auth: au } = await auth();
   const provider = new lib.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
+  // how each attempt ends, for the owner's statistics (no email or name)
+  const track = (result, e) => {
+    try {
+      window.poTrack?.("sign_in_result", {
+        page: location.pathname, result,
+        code: e ? String(e.code || e.name || "").slice(0, 60) : "",
+        message: e && !e.code ? String(e.message || "").slice(0, 120) : "",
+      });
+    } catch {}
+  };
   try {
     await lib.signInWithPopup(au, provider);
+    track("ok");
   } catch (e) {
     // popups blocked (some mobile browsers): fall back to a full-page redirect
     if (e && (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment")) {
+      track("redirect", e);
       await lib.signInWithRedirect(au, provider);
-    } else if (e && e.code !== "auth/popup-closed-by-user" && e.code !== "auth/cancelled-popup-request") {
+    } else if (e && (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request")) {
+      track("closed", e);
+    } else {
+      track("error", e);
       throw e;
     }
   }

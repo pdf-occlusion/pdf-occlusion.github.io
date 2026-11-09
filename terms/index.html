@@ -99,6 +99,7 @@
     var send = function (name, props) {
       try { navigator.sendBeacon(api, new Blob([JSON.stringify({ anon: id, events: [{ name: name, at: Date.now(), props: props }] })], { type: "text/plain" })); } catch (e) {}
     };
+    window.poTrack = send;
     var ref = document.referrer ? new URL(document.referrer).hostname : "";
     var utm = new URLSearchParams(location.search).get("utm_source") || "";
     send("page_view", { path: location.pathname, ref: ref === location.hostname ? "" : ref, utm: utm.slice(0, 40) });
