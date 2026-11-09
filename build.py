@@ -345,6 +345,7 @@ page("link/index.html", "link anki", "Link the PDF Occlusion add-on to your acco
 </div>
 <div id="link-out" class="hidden">
   <div class="row center" style="margin-top:22px"><button id="sign-in">{{G_ICON}}sign in with google</button></div>
+  <p class="muted center" style="margin-top:14px">the first 50 pages are free and need no card. signing in keeps count of your pages.</p>
 </div>
 <div id="link-in" class="hidden">
   <p class="muted center" id="as" style="margin-top:18px"></p>
@@ -382,6 +383,17 @@ $("approve").addEventListener("click", async () => {
     err(e.message); $("approve").disabled = false;
   }
 });
+// how long the page was open and how far it got, each time it is hidden or closed
+const opened = Date.now();
+let left = false;
+const leave = () => {
+  if (left) return;
+  left = true;
+  const stage = !code ? "no_code" : !$("done").classList.contains("hidden") ? "linked" : user ? "signed_in" : "signed_out";
+  window.poTrack?.("link_left", { seconds: Math.round((Date.now() - opened) / 1000), stage });
+};
+document.addEventListener("visibilitychange", () => { if (document.hidden) leave(); else left = false; });
+addEventListener("pagehide", leave);
 </script>""")
 
 # ------------------------------------------------------------------ privacy
