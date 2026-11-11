@@ -59,7 +59,9 @@ const $ = (id) => document.getElementById(id);
 const code = (new URLSearchParams(location.search).get("code") || "").toUpperCase();
 $("code").textContent = code || "no code";
 const err = (m) => { $("link-error").textContent = m; $("link-error").classList.remove("hidden"); };
-if (!code) err("Open this page from the add-on: Auto-occlude, then Sign in.");
+const linked = new URLSearchParams(location.search).has("linked");
+if (linked) { $("step-code").classList.add("hidden"); $("done").classList.remove("hidden"); }
+else if (!code) err("Open this page from the add-on: Auto-occlude, then Sign in.");
 let user = null;
 watchUser((u) => {
   user = u;
@@ -67,17 +69,27 @@ watchUser((u) => {
   $("link-in").classList.toggle("hidden", !u || !code);
   if (u) $("as").textContent = u.email;
 });
-$("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
-$("switch").addEventListener("click", async () => { await signOut(); await signIn().catch((e) => err(e.message)); });
+// one Google window at a time: a second click would cancel the open one
+const google = async () => {
+  $("sign-in").disabled = true;
+  try { await signIn(); } catch (e) { err(e.message); } finally { $("sign-in").disabled = false; }
+};
+$("sign-in").addEventListener("click", google);
+$("switch").addEventListener("click", async () => { await signOut(); await google(); });
 $("approve").addEventListener("click", async () => {
   $("approve").disabled = true;
   try {
     await api("/v1/link/approve", { method: "POST", body: { code }, user });
     window.poTrack?.("link_result", { result: "ok" });
     $("link-in").classList.add("hidden"); $("step-code").classList.add("hidden"); $("done").classList.remove("hidden");
+    // each code works once: coming back to this page should not offer it again
+    history.replaceState(null, "", "/link/?linked=1");
   } catch (e) {
     window.poTrack?.("link_result", { result: "error", message: String(e.message || "").slice(0, 120) });
-    err(e.message); $("approve").disabled = false;
+    err(e.status === 404 || e.status === 409
+      ? "This code has already been used or has expired. If Anki shows you as signed in, you're all set. If not, start again from Anki."
+      : e.message);
+    $("approve").disabled = false;
   }
 });
 // how long the page was open and how far it got, each time it is hidden or closed
@@ -86,7 +98,7 @@ let left = false;
 const leave = () => {
   if (left) return;
   left = true;
-  const stage = !code ? "no_code" : !$("done").classList.contains("hidden") ? "linked" : user ? "signed_in" : "signed_out";
+  const stage = linked ? "linked" : !code ? "no_code" : !$("done").classList.contains("hidden") ? "linked" : user ? "signed_in" : "signed_out";
   window.poTrack?.("link_left", { seconds: Math.round((Date.now() - opened) / 1000), stage });
 };
 document.addEventListener("visibilitychange", () => { if (document.hidden) leave(); else left = false; });
