@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>account</title>
-<meta name="description" content="Your PDFs, plan and linked Anki installs.">
+<meta name="description" content="Your pages, quizzes, plan and linked Anki installs.">
 <meta property="og:title" content="pdf occlusion">
-<meta property="og:description" content="An Anki add-on that turns lecture PDFs into image occlusion cards.">
+<meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and practice quizzes.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
 <meta property="og:url" content="https://pdf-occlusion.github.io/">
 <meta name="twitter:card" content="summary_large_image">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=4a430688">
+<link rel="stylesheet" href="/assets/site.css?v=101bf35f">
 </head>
 <body>
 <main>
@@ -24,6 +24,7 @@
   <h1>account</h1>
   <nav class="links" aria-label="Main">
     <a href="/pricing/">pricing</a>
+    <a href="/quiz/">quizzes</a>
     <a href="/account/" aria-current="page">account</a>
   </nav>
 </div>
@@ -38,11 +39,14 @@
   <p class="note center hidden" id="paid"></p>
 
   <div class="panel" style="margin-top:26px">
-    <div class="left" id="left">0</div>
-    <div class="muted" id="left-note">pages left</div>
+    <div class="balances">
+      <div><div class="left" id="left">0</div><div class="muted" id="left-note">pages left</div></div>
+      <div><div class="left" id="qleft">0</div><div class="muted" id="qleft-note">quizzes left</div></div>
+    </div>
     <dl class="kv">
       <dt>plan</dt><dd id="plan">none</dd>
-      <dt>this month</dt><dd id="month"></dd>
+      <dt>pages this month</dt><dd id="month"></dd>
+      <dt>quizzes this month</dt><dd id="qmonth"></dd>
       <dt>extra pages</dt><dd id="packs"></dd>
     </dl>
     <div class="row">
@@ -57,6 +61,13 @@
     <ul class="plain list" id="devices"></ul>
     <p class="muted small hidden" id="no-devices">none linked yet</p>
     <div class="row"><button class="hidden" id="unlink">sign out of all installs</button></div>
+  </div>
+
+  <div class="panel">
+    <h3>quizzes</h3>
+    <ul class="plain list" id="quizzes"></ul>
+    <p class="muted small hidden" id="no-quizzes">nothing yet</p>
+    <div class="row hidden" id="all-quizzes"><a class="btn" href="/quiz/">all quizzes</a></div>
   </div>
 
   <div class="panel">
@@ -98,8 +109,11 @@ async function load() {
   $("who").textContent = me.email || "";
   $("left").textContent = me.pages_left.toLocaleString();
   $("left-note").textContent = me.pages_left === 1 ? "page left" : "pages left";
-  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? `${me.free_left} free pages` : "none";
+  $("qleft").textContent = me.quiz_left.toLocaleString();
+  $("qleft-note").textContent = me.quiz_left === 1 ? "quiz left" : "quizzes left";
+  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left || me.quiz_free_left ? "free to start" : "none";
   $("month").textContent = me.plan ? `${me.plan_used} of ${me.plan_allowance} used` : "no plan";
+  $("qmonth").textContent = me.plan ? `${me.quiz_plan_used} of ${me.quiz_plan_allowance} used` : "no plan";
   $("packs").textContent = me.pack_pages ? `${me.pack_pages} left` : "none";
   $("upgrade").classList.toggle("hidden", !!me.plan);
   $("billing").classList.toggle("hidden", !me.plan && !me.pack_pages && !paid);
@@ -122,6 +136,18 @@ async function load() {
     jobs.append(li);
   }
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
+  const { quizzes } = await api("/v1/quizzes", { user });
+  const ql = $("quizzes"); ql.replaceChildren();
+  for (const q of quizzes.slice(0, 5)) {
+    const li = document.createElement("li");
+    li.innerHTML = "<a></a><span></span>";
+    li.children[0].href = `/quiz/?id=${encodeURIComponent(q.id)}`;
+    li.children[0].textContent = q.lecture || "Untitled pdf";
+    li.children[1].textContent = `${q.n_questions} questions, ${when(q.created_at)}`;
+    ql.append(li);
+  }
+  $("no-quizzes").classList.toggle("hidden", quizzes.length > 0);
+  $("all-quizzes").classList.toggle("hidden", quizzes.length <= 5);
 }
 watchUser(async (u) => {
   user = u;

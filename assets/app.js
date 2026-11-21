@@ -1,6 +1,21 @@
 // Shared by every page: header state, sign-in, and calls to the server.
 
-export const API = "https://pdf-occlusion-api.pdf-occlusion.workers.dev";
+// Local testing only: on localhost, ?api=<origin> points the pages at a local
+// server and ?dev=<uid> signs in as a test account (the local server must allow
+// it). Both are kept for the tab. Nothing changes on the real site.
+const LOCAL = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+function local(key) {
+  if (!LOCAL) return "";
+  try {
+    const v = new URLSearchParams(location.search).get(key);
+    if (v) sessionStorage.setItem("po-" + key, v);
+    return v || sessionStorage.getItem("po-" + key) || "";
+  } catch { return ""; }
+}
+const DEV_UID = local("dev");
+const DEV_USER = DEV_UID ? { uid: DEV_UID, email: `${DEV_UID}@example.test`, getIdToken: async () => `dev:${DEV_UID}` } : null;
+
+export const API = local("api") || "https://pdf-occlusion-api.pdf-occlusion.workers.dev";
 export const ANKIWEB = "https://ankiweb.net/shared/info/783821131";
 
 const FIREBASE = {
@@ -26,6 +41,7 @@ async function auth() {
 
 // Calls back with the signed-in user, or null, now and on every change.
 export async function watchUser(cb) {
+  if (DEV_USER) { cb(DEV_USER); return; }
   const { lib, auth: au } = await auth();
   lib.onAuthStateChanged(au, cb);
 }
@@ -62,6 +78,7 @@ export async function signIn() {
 }
 
 export async function signOut() {
+  if (DEV_USER) { try { sessionStorage.removeItem("po-dev"); } catch {} location.reload(); return; }
   const { lib, auth: au } = await auth();
   await lib.signOut(au);
 }

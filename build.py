@@ -17,7 +17,7 @@ HEAD = """<!doctype html>
 <title>{title}</title>
 <meta name="description" content="{desc}">
 <meta property="og:title" content="pdf occlusion">
-<meta property="og:description" content="An Anki add-on that turns lecture PDFs into image occlusion cards.">
+<meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and practice quizzes.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
 <meta property="og:url" content="https://pdf-occlusion.github.io/">
 <meta name="twitter:card" content="summary_large_image">
@@ -31,7 +31,7 @@ HEAD = """<!doctype html>
 <main>
 """
 
-NAV = [("pricing", "/pricing/", "pricing"), ("account", "/account/", "account")]
+NAV = [("pricing", "/pricing/", "pricing"), ("quizzes", "/quiz/", "quiz"), ("account", "/account/", "account")]
 
 # Page views and clicks, for the owner's statistics: a random id kept in this
 # browser, the page's path and where the visitor came from. No query string,
@@ -105,13 +105,13 @@ G_ICON = ('<svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill
 
 # ------------------------------------------------------------------ home
 PRICES = f"""<div class="panel prices">
-  <div><div class="amount">free</div><div class="what">your first 50 pages</div></div>
-  <div><div class="amount">$14.99</div><div class="what">a month for 1,000 pages</div></div>
+  <div><div class="amount">free</div><div class="what">your first 50 pages and 2 quizzes</div></div>
+  <div><div class="amount">$14.99</div><div class="what">a month for 1,000 pages and 20 quizzes</div></div>
   <div><div class="amount">$9.99</div><div class="what">400 pages, no expiry</div></div>
 </div>"""
 
 page("index.html", "pdf occlusion",
-     "Auto-occlude boxes every label, term and key phrase in a PDF for you, inside Anki. Your first 50 pages are free.",
+     "Auto turns a PDF into image occlusion boxes, text cards or a practice quiz, inside Anki. Your first 50 pages and 2 quizzes are free.",
      body=top("pdf occlusion", small=False) + f"""
 <div class="badges">
   <span class="badge"><span class="badge-k">add-on code</span><span class="badge-v">783821131</span></span>
@@ -119,13 +119,22 @@ page("index.html", "pdf occlusion",
   <span class="badge"><span class="badge-k">license</span><span class="badge-v">MIT</span></span>
 </div>
 
-<p class="lede">press auto-occlude and every label, term and key phrase in your pdf is boxed for you. check it over, then make the cards.</p>
+<p class="lede">press auto and choose what your pdf becomes: boxes over its labels, cards from its text, or a quiz to take on any device.</p>
 
 <div style="margin-top:26px">{PRICES}</div>
 
 <div class="panel demo">
   <img src="/assets/demo.gif" width="840" height="585" alt="PDF Occlusion open in Anki with boxes placed over the labels of an anatomy diagram">
 </div>
+
+<section class="center">
+  <h2>three things from one pdf</h2>
+  <div class="panel outputs">
+    <div><div class="name">boxes</div><div class="what">every label and key term covered on the page itself</div></div>
+    <div><div class="name">cards</div><div class="what">one fact per card, from what each page says</div></div>
+    <div><div class="name">quiz</div><div class="what">board-style questions with a reason for every answer</div></div>
+  </div>
+</section>
 
 <section class="center">
   <h2>anything in a pdf</h2>
@@ -161,22 +170,22 @@ page("index.html", "pdf occlusion",
 
 # ------------------------------------------------------------------ pricing
 page("pricing/index.html", "pricing",
-     "Your first 50 pages are free. Then $14.99 a month for 1,000 pages, $149.90 a year, or 400 pages for $9.99.",
+     "Your first 50 pages and 2 quizzes are free. Then $14.99 a month for 1,000 pages and 20 quizzes, $149.90 a year, or 400 pages for $9.99.",
      body=top("pricing", "pricing") + f"""
-<p class="lede">auto-occlude is counted in pages. the add-on itself is free.</p>
+<p class="lede">auto is counted in pages and quizzes. the add-on itself is free.</p>
 
 <div class="panel" style="margin-top:30px">
   <ul class="plain price-list">
     <li>
-      <div><div class="name">first 50 pages</div><div class="what">on us</div></div>
+      <div><div class="name">to start</div><div class="what">50 pages and 2 quizzes</div></div>
       <div class="amount">free</div>
     </li>
     <li>
-      <div><div class="name">monthly</div><div class="what">1,000 pages a month</div></div>
+      <div><div class="name">monthly</div><div class="what">1,000 pages and 20 quizzes a month</div></div>
       <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">yearly</div><div class="what">1,000 pages a month, two months cheaper</div></div>
+      <div><div class="name">yearly</div><div class="what">1,000 pages and 20 quizzes a month, two months cheaper</div></div>
       <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">subscribe</button></div>
     </li>
     <li>
@@ -189,9 +198,10 @@ page("pricing/index.html", "pricing",
 
 <section>
   <ul class="dots">
-    <li>A plan's pages reset each month. Extra pages are used once they run out.</li>
+    <li>Boxes and cards use 1 page per slide. A quiz uses 1 quiz, however long the lecture.</li>
+    <li>A plan's pages and quizzes reset each month. Extra pages are used once its pages run out.</li>
     <li>Cancel any time from your account. The plan runs to the end of what you paid for.</li>
-    <li>Pages are counted as they are done, so a run you stop early only uses what was finished.</li>
+    <li>Pages are counted as they are done, so a run you stop early only uses what was finished. A quiz is counted once its questions are ready.</li>
     <li>Boxing by hand is always free.</li>
   </ul>
 </section>
@@ -219,7 +229,7 @@ for (const b of document.querySelectorAll("[data-buy]")) {
 </script>""")
 
 # ------------------------------------------------------------------ account
-page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.",
+page("account/index.html", "account", "Your pages, quizzes, plan and linked Anki installs.",
      body=top("account", "account") + f"""
 <div id="signed-out" class="hidden">
   <p class="lede">sign in to see your plan and link the add-on.</p>
@@ -231,11 +241,14 @@ page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.
   <p class="note center hidden" id="paid"></p>
 
   <div class="panel" style="margin-top:26px">
-    <div class="left" id="left">0</div>
-    <div class="muted" id="left-note">pages left</div>
+    <div class="balances">
+      <div><div class="left" id="left">0</div><div class="muted" id="left-note">pages left</div></div>
+      <div><div class="left" id="qleft">0</div><div class="muted" id="qleft-note">quizzes left</div></div>
+    </div>
     <dl class="kv">
       <dt>plan</dt><dd id="plan">none</dd>
-      <dt>this month</dt><dd id="month"></dd>
+      <dt>pages this month</dt><dd id="month"></dd>
+      <dt>quizzes this month</dt><dd id="qmonth"></dd>
       <dt>extra pages</dt><dd id="packs"></dd>
     </dl>
     <div class="row">
@@ -250,6 +263,13 @@ page("account/index.html", "account", "Your PDFs, plan and linked Anki installs.
     <ul class="plain list" id="devices"></ul>
     <p class="muted small hidden" id="no-devices">none linked yet</p>
     <div class="row"><button class="hidden" id="unlink">sign out of all installs</button></div>
+  </div>
+
+  <div class="panel">
+    <h3>quizzes</h3>
+    <ul class="plain list" id="quizzes"></ul>
+    <p class="muted small hidden" id="no-quizzes">nothing yet</p>
+    <div class="row hidden" id="all-quizzes"><a class="btn" href="/quiz/">all quizzes</a></div>
   </div>
 
   <div class="panel">
@@ -283,8 +303,11 @@ async function load() {
   $("who").textContent = me.email || "";
   $("left").textContent = me.pages_left.toLocaleString();
   $("left-note").textContent = me.pages_left === 1 ? "page left" : "pages left";
-  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left ? `${me.free_left} free pages` : "none";
+  $("qleft").textContent = me.quiz_left.toLocaleString();
+  $("qleft-note").textContent = me.quiz_left === 1 ? "quiz left" : "quizzes left";
+  $("plan").textContent = me.plan === "yearly" ? "yearly" : me.plan === "monthly" ? "monthly" : me.free_left || me.quiz_free_left ? "free to start" : "none";
   $("month").textContent = me.plan ? `${me.plan_used} of ${me.plan_allowance} used` : "no plan";
+  $("qmonth").textContent = me.plan ? `${me.quiz_plan_used} of ${me.quiz_plan_allowance} used` : "no plan";
   $("packs").textContent = me.pack_pages ? `${me.pack_pages} left` : "none";
   $("upgrade").classList.toggle("hidden", !!me.plan);
   $("billing").classList.toggle("hidden", !me.plan && !me.pack_pages && !paid);
@@ -307,6 +330,18 @@ async function load() {
     jobs.append(li);
   }
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
+  const { quizzes } = await api("/v1/quizzes", { user });
+  const ql = $("quizzes"); ql.replaceChildren();
+  for (const q of quizzes.slice(0, 5)) {
+    const li = document.createElement("li");
+    li.innerHTML = "<a></a><span></span>";
+    li.children[0].href = `/quiz/?id=${encodeURIComponent(q.id)}`;
+    li.children[0].textContent = q.lecture || "Untitled pdf";
+    li.children[1].textContent = `${q.n_questions} questions, ${when(q.created_at)}`;
+    ql.append(li);
+  }
+  $("no-quizzes").classList.toggle("hidden", quizzes.length > 0);
+  $("all-quizzes").classList.toggle("hidden", quizzes.length <= 5);
 }
 watchUser(async (u) => {
   user = u;
@@ -336,6 +371,308 @@ $("unlink").addEventListener("click", async () => {
 });
 </script>""")
 
+# ------------------------------------------------------------------ quiz
+# /quiz/ lists the signed-in account's quizzes; /quiz/?id=...(&t=share token)
+# plays one, signed in or not.
+page("quiz/index.html", "quizzes", "Practice questions made from your lecture PDFs.",
+     body=top("quizzes", "quiz") + f"""
+<div id="q-loading" class="muted center" style="margin-top:22px">loading</div>
+
+<div id="q-out" class="hidden">
+  <p class="lede">sign in to see your quizzes.</p>
+  <div class="row center" style="margin-top:22px"><button id="sign-in">{{G_ICON}}sign in with google</button></div>
+</div>
+
+<div id="q-list" class="hidden">
+  <p class="lede" id="q-left"></p>
+  <div class="panel" style="margin-top:26px">
+    <ul class="plain list" id="quizzes"></ul>
+    <p class="muted small hidden" id="no-quizzes">nothing yet</p>
+  </div>
+</div>
+
+<div id="q-play" class="hidden">
+  <div class="q-bar">
+    <span id="q-pos"></span>
+    <span id="q-score"></span>
+  </div>
+  <div class="q-progress"><div id="q-fill"></div></div>
+
+  <div class="panel q-card" id="q-card">
+    <p class="q-stem" id="q-stem"></p>
+    <div id="q-table"></div>
+    <div class="q-choices" id="q-choices"></div>
+    <div class="q-exp hidden" id="q-exp"></div>
+    <div class="row q-actions">
+      <button id="q-back">back</button>
+      <button class="primary" id="q-submit" disabled>submit</button>
+      <button class="primary hidden" id="q-next">next</button>
+    </div>
+  </div>
+
+  <div class="panel q-result hidden" id="q-result">
+    <div class="left" id="r-pct"></div>
+    <div class="muted" id="r-line"></div>
+    <div class="row center">
+      <button id="r-review">review</button>
+      <button id="r-missed">retry missed</button>
+      <button id="r-again">start over</button>
+    </div>
+  </div>
+
+  <ol class="q-nav" id="q-nav" aria-label="Questions"></ol>
+
+  <div class="row center" style="margin-top:22px">
+    <button class="hidden" id="q-share">copy share link</button>
+  </div>
+</div>
+<p class="error hidden center" id="q-error" role="alert"></p>
+""", script="""<script type="module">
+import { watchUser, signIn, api, when } from "/assets/app.js";
+const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const quizId = params.get("id");
+const token = params.get("t");
+const show = (id) => { for (const k of ["q-loading", "q-out", "q-list", "q-play"]) $(k).classList.toggle("hidden", k !== id); };
+const err = (m) => { $("q-error").textContent = m; $("q-error").classList.remove("hidden"); };
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+let user = null;
+let started = false;
+
+$("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
+
+watchUser((u) => {
+  user = u;
+  if (quizId) { if (!started) { started = true; openQuiz(); } return; }
+  if (!u) { show("q-out"); return; }
+  loadList().catch((e) => { show("q-list"); err(e.message); });
+});
+
+// ------------------------------------------------ the list
+async function loadList() {
+  const [list, me] = await Promise.all([api("/v1/quizzes", { user }), api("/v1/me", { user }).catch(() => null)]);
+  $("q-left").textContent = me ? `${plural(me.quiz_left, "quiz", "quizzes")} left` : "";
+  const ul = $("quizzes"); ul.replaceChildren();
+  for (const q of list.quizzes) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = `/quiz/?id=${encodeURIComponent(q.id)}`;
+    a.textContent = q.lecture || "untitled pdf";
+    const s = document.createElement("span");
+    s.textContent = `${plural(q.n_questions, "question", "questions")}, ${when(q.created_at)}`;
+    li.append(a, s);
+    ul.append(li);
+  }
+  $("no-quizzes").classList.toggle("hidden", list.quizzes.length > 0);
+  show("q-list");
+}
+
+// ------------------------------------------------ playing
+let quiz = null, order = [], cur = 0, resp = {}, resultsOpen = false;
+const key = () => `po-quiz-${quizId}`;
+const save = () => { try { localStorage.setItem(key(), JSON.stringify({ resp, order, cur })); } catch {} };
+const restore = () => { try { return JSON.parse(localStorage.getItem(key()) || "null"); } catch { return null; } };
+const r = (i) => (resp[i] = resp[i] || { selected: null, answered: false, struck: [] });
+
+async function openQuiz() {
+  try {
+    quiz = await api(`/v1/quiz/${encodeURIComponent(quizId)}${token ? `?t=${encodeURIComponent(token)}` : ""}`, { user });
+  } catch (e) {
+    // someone else's link without its token, or the owner signed out: sign in, then try again
+    if (e.status === 404 && !user && !token) { started = false; show("q-out"); return; }
+    show("");
+    err(e.status === 404 ? "this quiz does not exist, or its link has changed." : e.message);
+    return;
+  }
+  document.title = quiz.lecture || "quiz";
+  document.querySelector(".top h1").textContent = quiz.lecture || "quiz";
+  const n = quiz.questions.length;
+  const saved = restore();
+  if (saved && Array.isArray(saved.order) && saved.order.length && saved.order.every((i) => i < n)) {
+    resp = saved.resp || {}; order = saved.order; cur = Math.min(saved.cur || 0, order.length - 1);
+  } else {
+    order = quiz.questions.map((_, i) => i);
+  }
+  $("q-share").classList.toggle("hidden", !quiz.owner);
+  show("q-play");
+  render();
+}
+
+function tally() {
+  let right = 0, done = 0;
+  for (const i of order) { const x = resp[i]; if (x && x.answered) { done++; if (x.selected === quiz.questions[i].correct) right++; } }
+  return { right, done };
+}
+
+function bar() {
+  const { right, done } = tally();
+  $("q-pos").textContent = resultsOpen ? "done" : `${cur + 1} of ${order.length}`;
+  $("q-score").textContent = done ? `${right} of ${done} right` : "";
+  $("q-fill").style.width = `${(done / order.length) * 100}%`;
+}
+
+function table(rows) {
+  const t = document.createElement("table");
+  t.className = "q-tbl";
+  rows.forEach((row, ri) => {
+    const tr = document.createElement("tr");
+    for (const c of row) { const cell = document.createElement(ri === 0 ? "th" : "td"); cell.textContent = c; tr.append(cell); }
+    t.append(tr);
+  });
+  const wrap = document.createElement("div");
+  wrap.className = "q-tbl-wrap";
+  wrap.append(t);
+  return wrap;
+}
+
+function render() {
+  resultsOpen = false;
+  $("q-result").classList.add("hidden");
+  $("q-card").classList.remove("hidden");
+  const i = order[cur], q = quiz.questions[i], x = r(i);
+  $("q-stem").textContent = q.question;
+  $("q-table").replaceChildren(...(q.table ? [table(q.table)] : []));
+  const box = $("q-choices"); box.replaceChildren();
+  for (const L of Object.keys(q.answers)) {
+    const b = document.createElement("button");
+    b.className = "q-choice";
+    b.dataset.letter = L;
+    const tag = document.createElement("span"); tag.className = "q-letter"; tag.textContent = L;
+    const txt = document.createElement("span"); txt.textContent = q.answers[L];
+    b.append(tag, txt);
+    b.addEventListener("click", () => pick(L));
+    b.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      if (x.answered) return;
+      x.struck = x.struck.includes(L) ? x.struck.filter((s) => s !== L) : [...x.struck, L];
+      paint(); save();
+    });
+    box.append(b);
+  }
+  paint();
+  bar(); nav(); save();
+}
+
+function paint() {
+  const i = order[cur], q = quiz.questions[i], x = r(i);
+  for (const b of document.querySelectorAll(".q-choice")) {
+    const L = b.dataset.letter;
+    b.classList.toggle("selected", !x.answered && x.selected === L);
+    b.classList.toggle("struck", !x.answered && x.struck.includes(L));
+    b.classList.toggle("right", x.answered && L === q.correct);
+    b.classList.toggle("wrong", x.answered && L === x.selected && L !== q.correct);
+    b.disabled = x.answered;
+  }
+  const exp = $("q-exp");
+  exp.replaceChildren();
+  if (x.answered) {
+    for (const L of Object.keys(q.answers)) {
+      const p = document.createElement("p");
+      p.className = L === q.correct ? "right" : "";
+      const tag = document.createElement("b"); tag.textContent = `${L}. `;
+      p.append(tag, document.createTextNode(q.explanations?.[L] || ""));
+      exp.append(p);
+    }
+    if (q.page) { const p = document.createElement("p"); p.className = "muted small"; p.textContent = `page ${q.page}`; exp.append(p); }
+  }
+  exp.classList.toggle("hidden", !x.answered);
+  $("q-submit").classList.toggle("hidden", x.answered);
+  $("q-submit").disabled = !x.selected;
+  $("q-next").classList.toggle("hidden", !x.answered);
+  $("q-next").textContent = cur === order.length - 1 ? "see score" : "next";
+  $("q-back").disabled = cur === 0;
+}
+
+function pick(L) {
+  const x = r(order[cur]);
+  if (x.answered) return;
+  x.selected = L; x.struck = x.struck.filter((s) => s !== L);
+  paint(); save();
+}
+
+function submit() {
+  const x = r(order[cur]);
+  if (!x.selected || x.answered) return;
+  x.answered = true;
+  paint(); bar(); nav(); save();
+}
+
+function go(n) {
+  if (n < 0) return;
+  if (n >= order.length) { results(); return; }
+  cur = n; render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function nav() {
+  const ol = $("q-nav"); ol.replaceChildren();
+  order.forEach((i, n) => {
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.textContent = n + 1;
+    b.setAttribute("aria-label", `question ${n + 1}`);
+    const x = resp[i];
+    if (x && x.answered) b.className = x.selected === quiz.questions[i].correct ? "right" : "wrong";
+    if (n === cur && !resultsOpen) b.setAttribute("aria-current", "true");
+    b.addEventListener("click", () => go(n));
+    li.append(b); ol.append(li);
+  });
+}
+
+function results() {
+  resultsOpen = true;
+  const { right, done } = tally();
+  $("q-card").classList.add("hidden");
+  $("q-result").classList.remove("hidden");
+  $("r-pct").textContent = done ? `${Math.round((right / done) * 100)}%` : "0%";
+  const skipped = order.length - done;
+  $("r-line").textContent = `${right} of ${order.length} right` + (skipped ? `, ${skipped} not answered` : "");
+  const missed = order.filter((i) => resp[i]?.answered && resp[i].selected !== quiz.questions[i].correct);
+  $("r-missed").classList.toggle("hidden", !missed.length);
+  bar(); nav(); save();
+}
+
+function restart(list) {
+  for (const i of list) delete resp[i];
+  order = list; cur = 0; render();
+}
+
+$("q-submit").addEventListener("click", submit);
+$("q-next").addEventListener("click", () => go(cur + 1));
+$("q-back").addEventListener("click", () => go(cur - 1));
+$("r-review").addEventListener("click", () => go(0));
+$("r-missed").addEventListener("click", () => restart(order.filter((i) => resp[i]?.answered && resp[i].selected !== quiz.questions[i].correct)));
+$("r-again").addEventListener("click", () => restart(quiz.questions.map((_, i) => i)));
+
+$("q-share").addEventListener("click", async () => {
+  const b = $("q-share");
+  try {
+    const { share_token } = await api(`/v1/quiz/${encodeURIComponent(quizId)}/share`, { method: "POST", user });
+    const link = `${location.origin}/quiz/?id=${encodeURIComponent(quizId)}&t=${encodeURIComponent(share_token)}`;
+    await navigator.clipboard.writeText(link);
+    b.textContent = "link copied";
+    setTimeout(() => { b.textContent = "copy share link"; }, 2000);
+  } catch (e) { err(e.message || "the link could not be copied."); }
+});
+
+// A to E (or 1 to 5) picks, enter submits then moves on, arrows move
+document.addEventListener("keydown", (e) => {
+  if (!quiz || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "ArrowLeft") { e.preventDefault(); if (resultsOpen) go(order.length - 1); else go(cur - 1); return; }
+  if (e.key === "ArrowRight") { e.preventDefault(); if (!resultsOpen) go(cur + 1); return; }
+  if (resultsOpen) return;
+  if (e.key === "Enter") {
+    if (document.activeElement && document.activeElement.tagName === "BUTTON" && !document.activeElement.classList.contains("q-choice")) return;
+    e.preventDefault();
+    if (r(order[cur]).answered) go(cur + 1); else submit();
+    return;
+  }
+  const letters = Object.keys(quiz.questions[order[cur]].answers);
+  const k = /^[1-5]$/.test(e.key) ? letters[Number(e.key) - 1] : e.key.toUpperCase();
+  if (letters.includes(k) && e.key.length === 1) { e.preventDefault(); pick(k); }
+});
+</script>""")
+
 # ------------------------------------------------------------------ link
 page("link/index.html", "link anki", "Link the PDF Occlusion add-on to your account.",
      body=top("link anki") + f"""
@@ -345,7 +682,7 @@ page("link/index.html", "link anki", "Link the PDF Occlusion add-on to your acco
 </div>
 <div id="link-out" class="hidden">
   <div class="row center" style="margin-top:22px"><button id="sign-in">{{G_ICON}}sign in with google</button></div>
-  <p class="muted center" style="margin-top:14px">the first 50 pages are free and need no card. signing in keeps count of your pages.</p>
+  <p class="muted center" style="margin-top:14px">the first 50 pages and 2 quizzes are free and need no card. signing in keeps count of them.</p>
 </div>
 <div id="link-in" class="hidden">
   <p class="muted center" id="as" style="margin-top:18px"></p>
@@ -364,7 +701,7 @@ $("code").textContent = code || "no code";
 const err = (m) => { $("link-error").textContent = m; $("link-error").classList.remove("hidden"); };
 const linked = new URLSearchParams(location.search).has("linked");
 if (linked) { $("step-code").classList.add("hidden"); $("done").classList.remove("hidden"); }
-else if (!code) err("Open this page from the add-on: Auto-occlude, then Sign in.");
+else if (!code) err("Open this page from the add-on: Auto, then Sign in.");
 let user = null;
 watchUser((u) => {
   user = u;
@@ -412,16 +749,17 @@ addEventListener("pagehide", leave);
 page("privacy/index.html", "privacy", "Privacy policy for PDF Occlusion.",
      body=top("privacy") + f"""
 <div class="prose">
-  <p class="muted center" style="margin-top:14px">effective november 9, 2026</p>
+  <p class="muted center" style="margin-top:14px">effective november 21, 2026</p>
 
   <h2>1. scope</h2>
-  <p>This Privacy Policy describes how PDF Occlusion ("we", "us" or "our") collects, uses and discloses information in connection with this website, the PDF Occlusion add-on and the Auto-occlude service (together, the "Service"). By using the Service you acknowledge the practices described in this policy.</p>
+  <p>This Privacy Policy describes how PDF Occlusion ("we", "us" or "our") collects, uses and discloses information in connection with this website, the PDF Occlusion add-on and the Auto service (together, the "Service"). By using the Service you acknowledge the practices described in this policy.</p>
 
   <h2>2. information we collect</h2>
   <ul>
     <li><b>Account information.</b> When you sign in, we receive your email address and an account identifier from the sign-in provider you choose.</li>
-    <li><b>Submitted content.</b> When you use Auto-occlude, the add-on transmits the text of every page of the PDF, a few page images to identify the document, images of the pages you select and the text found on them, the settings and instructions you choose, and any notes you attach ("Submitted Content"). To make cards, the Service first works out what the document is and what each page teaches; those notes are part of Submitted Content.</li>
-    <li><b>Usage records.</b> For each use of Auto-occlude we record the document name, the number of pages, the date and the credits consumed.</li>
+    <li><b>Submitted content.</b> When you use Auto to make boxes, cards or a quiz, the add-on transmits the text of every page of the PDF, a few page images to identify the document, images of the pages you select and the text found on them, the settings and instructions you choose, and any notes you attach ("Submitted Content"). To make them, the Service first works out what the document is and what each page teaches; those notes are part of Submitted Content.</li>
+    <li><b>Usage records.</b> For each use of Auto we record the document name, the number of pages, the date and the credits consumed.</li>
+    <li><b>Quizzes.</b> When you make a quiz, we keep its questions, answers and explanations, with the document name, in your account so you can take it later on any device. If you share a quiz, anyone with its link can view it until you change the link. Your answers to a quiz are kept only in your browser.</li>
     <li><b>Installation identifiers.</b> Linking the add-on to your account creates a key stored on your device. We retain only a one-way fingerprint of that key. The add-on also sends a one-way fingerprint of your computer's hardware identifier, which we use to limit free pages to one allowance per computer; the identifier itself never leaves your computer.</li>
     <li><b>Usage statistics.</b> The add-on reports which of its buttons and features are used, page and card counts, errors, and its own, Anki's and your operating system's versions, tagged with the one-way computer fingerprint described above and, when you are signed in, your account. It does not report page images, file names, card text or anything you type. You can turn this off with the <code>usage_stats</code> setting in the add-on's config. This website records the pages you view, the links and buttons you click, whether signing in and linking worked, and the site that referred you, tagged with a random identifier stored in your browser.</li>
     <li><b>Payment information.</b> Payments are processed by a third-party payment processor. We do not receive or store full payment card numbers. We retain the customer and transaction identifiers needed to provide what you purchased.</li>
@@ -431,13 +769,13 @@ page("privacy/index.html", "privacy", "Privacy policy for PDF Occlusion.",
   <p>We use information to provide, operate and maintain the Service; to understand how the Service is used and improve it; to process transactions and account for credits; to authenticate users and linked installations; to detect and prevent fraud, abuse and security incidents; to communicate with you about your account; and to comply with legal obligations.</p>
 
   <h2>4. submitted content</h2>
-  <p>Submitted Content is processed solely to provide the Service to you. It is not retained after your request has been completed (notes about the document are kept only while a run is in progress, at most 6 hours), it is not sold, and it is not used to train machine learning models. You remain responsible for ensuring that you have the right to submit it.</p>
+  <p>Submitted Content is processed solely to provide the Service to you. It is not retained after your request has been completed (notes about the document are kept only while a run is in progress, at most 6 hours; quizzes made from it are kept as described in section 2), it is not sold, and it is not used to train machine learning models. You remain responsible for ensuring that you have the right to submit it.</p>
 
   <h2>5. disclosure of information</h2>
   <p>We do not sell or rent personal information. We disclose information only (a) to service providers that host, authenticate, process payments or otherwise perform services on our behalf, subject to obligations of confidentiality; (b) where required by law, regulation, legal process or governmental request; (c) to protect the rights, property or safety of the Service, its users or others; (d) in connection with a merger, acquisition or sale of assets; or (e) with your consent.</p>
 
   <h2>6. retention</h2>
-  <p>Account information and usage records are retained for as long as your account is active. When you delete your account, they are deleted, except where retention is required by law or by our payment processor.</p>
+  <p>Account information, usage records and quizzes are retained for as long as your account is active. When you delete your account, they are deleted, except where retention is required by law or by our payment processor.</p>
 
   <h2>7. security</h2>
   <p>We use reasonable administrative, technical and organizational measures to protect information. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
@@ -463,10 +801,10 @@ page("privacy/index.html", "privacy", "Privacy policy for PDF Occlusion.",
 page("terms/index.html", "terms", "Terms of service for PDF Occlusion.",
      body=top("terms") + f"""
 <div class="prose">
-  <p class="muted center" style="margin-top:14px">effective november 7, 2026</p>
+  <p class="muted center" style="margin-top:14px">effective november 21, 2026</p>
 
   <h2>1. acceptance</h2>
-  <p>These Terms of Service (the "Terms") govern your access to and use of this website, the PDF Occlusion add-on and the Auto-occlude service (together, the "Service"). By using the Service you agree to these Terms. If you do not agree, do not use the Service.</p>
+  <p>These Terms of Service (the "Terms") govern your access to and use of this website, the PDF Occlusion add-on and the Auto service (together, the "Service"). By using the Service you agree to these Terms. If you do not agree, do not use the Service.</p>
 
   <h2>2. eligibility</h2>
   <p>You must be at least 13 years old to use the Service, and old enough to form a binding contract where you live to make a purchase.</p>
@@ -475,10 +813,10 @@ page("terms/index.html", "terms", "Terms of service for PDF Occlusion.",
   <p>You are responsible for your account, for keeping your sign-in and linked installations secure, and for all activity under your account. Accounts are for one person and may not be shared, sold or transferred.</p>
 
   <h2>4. the add-on</h2>
-  <p>The add-on's source code is licensed under the MIT License. These Terms govern the online features of the Service, including accounts, credits and Auto-occlude.</p>
+  <p>The add-on's source code is licensed under the MIT License. These Terms govern the online features of the Service, including accounts, credits and Auto.</p>
 
   <h2>5. credits</h2>
-  <p>Auto-occlude is measured in pages. Each page processed consumes one page credit; pages are counted as they are completed. Page credits have no cash value and are not transferable. Page credits included with a subscription expire at the end of each monthly period. Purchased page credits do not expire while your account remains active.</p>
+  <p>Auto is measured in pages and quizzes. Each page processed for boxes or cards consumes one page credit; pages are counted as they are completed. Each quiz consumes one quiz credit once its questions are ready. Credits have no cash value and are not transferable. Credits included with a subscription expire at the end of each monthly period. Purchased page credits do not expire while your account remains active.</p>
 
   <h2>6. subscriptions and payment</h2>
   <p>Subscriptions are billed in advance and renew automatically at the end of each period until cancelled. You may cancel at any time; cancellation takes effect at the end of the current period. Except where required by law, all fees are non-refundable. We may change prices with notice, effective at your next renewal. You are responsible for applicable taxes.</p>
@@ -487,10 +825,10 @@ page("terms/index.html", "terms", "Terms of service for PDF Occlusion.",
   <p>You retain all rights to the documents and other material you submit. You grant us a limited, non-exclusive license to process that material solely to provide the Service to you. You represent that you have all rights necessary to submit it and that doing so does not violate any law or the rights of any third party.</p>
 
   <h2>8. acceptable use</h2>
-  <p>You agree not to: use the Service unlawfully or to infringe the rights of others; submit material you are not entitled to use; interfere with, overload or attempt to gain unauthorized access to the Service; circumvent usage limits or credit accounting; access the Service by automated means other than the add-on; or resell or redistribute the Service.</p>
+  <p>You agree not to: use the Service unlawfully or to infringe the rights of others; submit material you are not entitled to use; interfere with, overload or attempt to gain unauthorized access to the Service; circumvent usage limits or credit accounting; access the Service by automated means other than the add-on and this website; or resell or redistribute the Service.</p>
 
   <h2>9. output</h2>
-  <p>Occlusions produced by the Service are generated automatically and may be incomplete or inaccurate. You are responsible for reviewing them before use. Nothing produced by the Service is professional, medical, legal or other advice.</p>
+  <p>Boxes, cards and quizzes produced by the Service are generated automatically and may be incomplete or inaccurate. You are responsible for reviewing them before use. Nothing produced by the Service is professional, medical, legal or other advice.</p>
 
   <h2>10. intellectual property</h2>
   <p>Except for the add-on source code and your content, the Service and all related materials are owned by us and protected by law. No rights are granted other than those expressly stated in these Terms.</p>
