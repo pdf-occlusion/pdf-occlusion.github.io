@@ -124,7 +124,7 @@ page("index.html", "pdf occlusion",
 <div style="margin-top:26px">{PRICES}</div>
 
 <div class="panel demo">
-  <img src="/assets/window.png" width="840" height="525" alt="PDF Occlusion open in Anki with boxes over the labels of an anatomy diagram">
+  <img src="/assets/demo.gif" width="840" height="525" alt="PDF Occlusion open in Anki, placing boxes over the labels of an anatomy slide">
 </div>
 
 <section class="center">
