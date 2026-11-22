@@ -31,7 +31,7 @@ HEAD = """<!doctype html>
 <main>
 """
 
-NAV = [("Pricing", "/pricing/", "pricing"), ("Account", "/account/", "account")]
+NAV = [("Quizzes", "/quiz/", "quiz"), ("Pricing", "/pricing/", "pricing"), ("Account", "/account/", "account")]
 
 # Page views and clicks, for the owner's statistics: a random id kept in this
 # browser, the page's path and where the visitor came from. No query string,
@@ -96,7 +96,7 @@ def page(path, title, desc, body, script="", wide=False):
     head = HEAD.format(title=title, desc=desc).replace("CSSVER", version("site.css"))
     if wide:
         head = head.replace("<main>", '<main class="wide">')
-    script = script.replace("JSVER", version("quiz.js"))
+    script = script.replace("JSVER", version("quiz.js")).replace("HOMEVER", version("home.js"))
     html = head + body + FOOT.format(script=(script + "\n" + BEACON).strip())
     out = os.path.join(HERE, path)
     os.makedirs(os.path.dirname(out) or HERE, exist_ok=True)
@@ -241,12 +241,12 @@ for (const b of document.querySelectorAll("[data-buy]")) {
 </script>""")
 
 # ------------------------------------------------------------------ account
-# The one signed-in place: credits, quizzes, installs. Quizzes play at
-# /quiz/?id=..., which share links also use.
-page("account/index.html", "Account", "Your quizzes, credits, plan and linked Anki installs.",
+# Account matters: credits, plan, billing, installs, history, sign out and
+# delete. Quizzes have their own home at /quiz/.
+page("account/index.html", "Account", "Your credits, plan and linked Anki installs.",
      body=top("Account", "account") + f"""
 <div id="signed-out" class="hidden">
-  <p class="lede">Sign in to see your practice quizzes and credits.</p>
+  <p class="lede">Sign in to see your credits and plan.</p>
   <div class="row center" style="margin-top:22px"><button id="sign-in">{{G_ICON}}Sign In with Google</button></div>
 </div>
 
@@ -270,37 +270,9 @@ page("account/index.html", "Account", "Your quizzes, credits, plan and linked An
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-head">
-      <h3>Practice Quizzes</h3>
-      <label class="tick-all hidden" id="pick-all-wrap"><input type="checkbox" id="pick-all">Select All</label>
-    </div>
-    <ul class="plain list quiz-list" id="quizzes"></ul>
-    <p class="muted small hidden" id="no-quizzes">No quizzes yet.</p>
-    <div class="pickbar hidden" id="pickbar">
-      <span class="pick-count" id="pick-count"></span>
-      <div class="seg" id="pick-only">
-        <button type="button" data-only="all"></button>
-        <button type="button" data-only="missed"></button>
-        <button type="button" data-only="unseen"></button>
-        <button type="button" data-only="flagged"></button>
-      </div>
-      <span class="pick-go">
-        <button type="button" class="primary" id="pick-go">Start</button>
-        <button type="button" id="pick-clear">Clear</button>
-      </span>
-    </div>
-    <form class="ids-row hidden" id="ids-row">
-      <input id="ids-input" type="text" placeholder="Question IDs" aria-label="Question IDs" autocomplete="off" autocapitalize="none" spellcheck="false">
-      <button type="submit" id="ids-go" disabled>Start</button>
-    </form>
-  </div>
-
-  <div class="panel hidden" id="practice">
-    <h3>Practice History</h3>
-    <div class="hidden" id="open-sec"><h4>In Progress</h4><ul class="plain list test-list" id="open-list"></ul></div>
-    <div class="hidden" id="weak-sec"><h4>Weakest Quizzes</h4><ul class="plain list test-list" id="weak-list"></ul></div>
-    <div class="hidden" id="past-sec"><h4>Past Tests</h4><ul class="plain list test-list" id="past-list"></ul></div>
+  <div class="panel quizzes-link">
+    <h3>Practice Quizzes</h3>
+    <div class="row"><a class="btn primary" href="/quiz/">Open Quizzes</a></div>
   </div>
 
   <div class="panel" id="devices-panel">
@@ -326,13 +298,10 @@ page("account/index.html", "Account", "Your quizzes, credits, plan and linked An
 <p class="error hidden center" id="acct-error" role="alert"></p>
 """, script="""<script type="module">
 import { watchUser, signIn, signOut, deleteSignIn, api, when } from "/assets/app.js";
-import * as P from "/assets/practice.js";
-import * as S from "/assets/sync.js";
 const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
 const n = (x) => Number(x || 0).toLocaleString();
-const STYLES = { step1: "Basic Science", shelf: "Clinical", recall: "Quick Recall", custom: "Custom" };
 $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
 $("sign-out").addEventListener("click", () => signOut());
 const paid = new URLSearchParams(location.search).get("paid");
@@ -353,7 +322,7 @@ function credits(me) {
 }
 const row = (id, text) => { $(id).textContent = text || ""; $(id).classList.toggle("hidden", !text); $(id + "-k").classList.toggle("hidden", !text); };
 async function load() {
-  const [me, list] = await Promise.all([api("/v1/me", { user }), api("/v1/quizzes", { user }).catch(() => ({ quizzes: [] }))]);
+  const me = await api("/v1/me", { user });
   const c = credits(me);
   $("who").textContent = me.email || "";
   $("left").textContent = n(c.left);
@@ -364,7 +333,6 @@ async function load() {
   row("packs", c.pack ? `${n(c.pack)} remaining` : "");
   $("upgrade").classList.toggle("hidden", !!me.plan);
   $("billing").classList.toggle("hidden", !me.plan && !c.pack && !paid);
-  quizzes(list.quizzes || []);
   const dev = $("devices"); dev.replaceChildren();
   for (const d of me.devices) {
     const li = document.createElement("li");
@@ -385,184 +353,10 @@ async function load() {
   }
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
 }
-let quizList = [];
-function quizzes(list) {
-  quizList = list;
-  const ul = $("quizzes"); ul.replaceChildren();
-  for (const q of list) {
-    const li = document.createElement("li");
-    li.dataset.id = q.id;
-    const tick = document.createElement("input");
-    tick.type = "checkbox";
-    tick.className = "pick";
-    tick.setAttribute("aria-label", `Add ${q.lecture || "this quiz"} to a practice set`);
-    tick.addEventListener("change", paintPick);
-    const text = document.createElement("div");
-    const a = document.createElement("a");
-    a.href = `/quiz/?id=${encodeURIComponent(q.id)}`;
-    a.textContent = q.lecture || "Untitled PDF";
-    const meta = document.createElement("div");
-    meta.className = "muted small";
-    const date = document.createElement("span");
-    date.className = "nowrap";
-    date.textContent = when(q.created_at);
-    meta.append([STYLES[q.style], `${q.n_questions} ${q.n_questions === 1 ? "question" : "questions"}`].filter(Boolean).join(", ") + ", ", date);
-    const st = P.stats(q.id, q.n_questions);
-    if (st.seen) {
-      const standing = document.createElement("span");
-      standing.className = "standing";
-      standing.textContent = `${st.seen} of ${q.n_questions} tried, ${Math.round((st.right / st.seen) * 100)}% correct`;
-      meta.append(standing);
-    }
-    text.append(a, meta);
-    const share = document.createElement("button");
-    share.className = "small-btn";
-    share.textContent = "Copy Link";
-    share.addEventListener("click", () => copyLink(q.id, share));
-    li.append(tick, text, share);
-    ul.append(li);
-  }
-  $("no-quizzes").classList.toggle("hidden", list.length > 0);
-  $("pick-all-wrap").classList.toggle("hidden", list.length < 2);
-  $("ids-row").classList.toggle("hidden", !list.length);
-  paintPick();
-}
-
-// ------------------------------------------------ practice sets
-// Tick quizzes to play them shuffled together, all of their questions or
-// only the ones missed, never tried or flagged here.
-let pickOnly = "all";
-const picked = () => [...document.querySelectorAll("#quizzes input.pick:checked")].map((t) => t.closest("li").dataset.id);
-function counts(ids) {
-  const c = { all: 0, missed: 0, unseen: 0, flagged: 0 };
-  for (const id of ids) {
-    const n = (quizList.find((q) => q.id === id) || {}).n_questions || 0;
-    const st = P.stats(id, n);
-    c.all += n; c.missed += st.seen - st.right; c.unseen += Math.max(0, n - st.seen); c.flagged += st.flagged;
-  }
-  return c;
-}
-const ONLY = { all: "All", missed: "Missed", unseen: "Unseen", flagged: "Flagged" };
-function paintPick() {
-  const ids = picked();
-  $("pickbar").classList.toggle("hidden", !ids.length);
-  const all = document.querySelectorAll("#quizzes input.pick");
-  $("pick-all").checked = all.length > 0 && ids.length === all.length;
-  if (!ids.length) { pickOnly = "all"; return; }
-  const c = counts(ids);
-  if (!c[pickOnly]) pickOnly = "all";
-  $("pick-count").textContent = `${ids.length} ${ids.length === 1 ? "Quiz" : "Quizzes"}`;
-  for (const b of document.querySelectorAll("#pick-only button")) {
-    const k = b.dataset.only;
-    b.textContent = `${ONLY[k]} ${c[k]}`;
-    b.disabled = !c[k];
-    b.classList.toggle("on", k === pickOnly && !!c[k]);
-  }
-  $("pick-go").disabled = !c[pickOnly];
-}
-$("pick-only").addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (!b || b.disabled) return;
-  pickOnly = b.dataset.only;
-  paintPick();
-});
-$("pick-all").addEventListener("change", () => {
-  for (const t of document.querySelectorAll("#quizzes input.pick")) t.checked = $("pick-all").checked;
-  paintPick();
-});
-$("pick-clear").addEventListener("click", () => {
-  for (const t of document.querySelectorAll("#quizzes input.pick")) t.checked = false;
-  paintPick();
-});
-$("pick-go").addEventListener("click", () => {
-  const ids = picked();
-  if (!ids.length) return;
-  const what = ids.length === 1 ? `id=${encodeURIComponent(ids[0])}` : `set=${ids.map(encodeURIComponent).join(",")}`;
-  location.href = `/quiz/?${what}` + (pickOnly !== "all" ? `&only=${pickOnly}` : "");
-});
-
-// Questions by the IDs shown on each question, typed or pasted.
-const typedIds = () => [...new Set($("ids-input").value.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean))];
-$("ids-input").addEventListener("input", () => { $("ids-go").disabled = !typedIds().length; });
-$("ids-row").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const ids = typedIds();
-  if (ids.length) location.href = `/quiz/?q=${ids.join(",")}`;
-});
-
-// ------------------------------------------------ practice history
-// Tests in progress and finished, and the quizzes you do worst on, from
-// this browser only.
-const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : "");
-function testRow(href, title, sub, how, del) {
-  const li = document.createElement("li");
-  const text = document.createElement("div");
-  const a = document.createElement("a");
-  a.href = href;
-  a.textContent = title || "Quiz";
-  text.append(a);
-  const meta = document.createElement("div");
-  meta.className = "muted small";
-  meta.textContent = [sub, ...how].filter(Boolean).join(", ");
-  text.append(meta);
-  li.append(text);
-  if (del) {
-    const b = document.createElement("button");
-    b.className = "small-btn";
-    b.textContent = "Delete";
-    b.addEventListener("click", () => {
-      if (!b.classList.contains("armed")) {
-        for (const x of document.querySelectorAll(".test-list .armed")) { x.classList.remove("armed"); x.textContent = "Delete"; }
-        b.classList.add("armed");
-        b.textContent = "Confirm Delete";
-        return;
-      }
-      P.deleteTest(del);
-      practice();
-      quizzes(quizList);
-    });
-    li.append(b);
-  }
-  return li;
-}
-function fill(name, rows) {
-  $(`${name}-list`).replaceChildren(...rows);
-  $(`${name}-sec`).classList.toggle("hidden", !rows.length);
-  return rows.length;
-}
-function practice() {
-  const tests = P.listTests();
-  const line = (t) => testRow(`/quiz/?${t.q}&test=${encodeURIComponent(t.id)}`, t.where, t.label,
-    [`${t.right + t.wrong} of ${t.n} answered`, t.right + t.wrong ? `${pct(t.right, t.right + t.wrong)} correct` : "", when(t.updated)], t.id);
-  const open = fill("open", tests.filter((t) => !t.done && !t.ended).map(line));
-  const past = fill("past", tests.filter((t) => t.done || t.ended).map(line));
-  const weak = P.quizzesPlayed().filter((z) => z.q && z.seen >= 5 && z.right < z.seen)
-    .sort((a, b) => a.right / a.seen - b.right / b.seen).slice(0, 5)
-    .map((z) => testRow(`/quiz/?${z.q}&only=missed`, z.name, "", [`${z.seen - z.right} missed`, `${pct(z.right, z.seen)} correct`]));
-  const w = fill("weak", weak);
-  $("practice").classList.toggle("hidden", !(open || past || w));
-}
-practice();
-async function copyLink(id, b) {
-  b.disabled = true;
-  try {
-    const { share_token } = await api(`/v1/quiz/${encodeURIComponent(id)}/share`, { method: "POST", user });
-    await navigator.clipboard.writeText(`${location.origin}/quiz/?id=${encodeURIComponent(id)}&t=${encodeURIComponent(share_token)}`);
-    b.textContent = "Copied";
-    setTimeout(() => { b.textContent = "Copy Link"; }, 2000);
-  } catch (e) { err(e.message || "The link could not be copied."); }
-  b.disabled = false;
-}
 watchUser(async (u) => {
   user = u;
-  S.setUser(u);
-  // your practice from every device, then the lists again
-  if (u) S.pullAll().then(() => { practice(); quizzes(quizList); });
   $("signed-out").classList.toggle("hidden", !!u);
   $("signed-in").classList.toggle("hidden", !u);
-  // practice history is this browser's, so it shows signed out too
-  if (u) $("signed-in").insertBefore($("practice"), $("devices-panel"));
-  else $("signed-out").append($("practice"));
   if (u) load().catch((e) => err(e.message));
 });
 async function go(path, body) {
@@ -588,11 +382,76 @@ $("unlink").addEventListener("click", async () => {
 </script>""")
 
 # ------------------------------------------------------------------ quiz
-# /quiz/?id=...(&t=share token) plays one quiz, signed in or not. Without an
-# id, /quiz/ goes to the account page, which lists the quizzes.
-page("quiz/index.html", "Quiz", "A practice quiz made from lecture slides.", wide=True,
-     body="""<script>(function () { var p = new URLSearchParams(location.search); if (!p.get("id") && !p.get("set") && !p.get("q")) location.replace("/account/"); })();</script>
-""" + top("Quiz").replace("<h1>", '<h1 id="q-title">').replace("</h1>", '</h1>\n  <p class="q-sub muted hidden" id="q-sub"></p>') + f"""
+# /quiz/?id=...(&t=share token) plays one quiz, signed in or not; ?set= and
+# ?q= play several (quiz.js). Without any of them, /quiz/ is the quiz home:
+# your quizzes, practice sets, questions by ID and practice history (home.js),
+# laid out like the jeff front page.
+QUIZ_HOME = f"""<div class="home-only qh-wrap">
+<div class="h-top">
+  <div class="h-top-left">
+    <a class="h-back" href="/">&larr; PDF Occlusion</a>
+    <div class="h-title">Quizzes</div>
+  </div>
+  <div class="h-top-right">
+    <span class="h-who" id="h-who"></span>
+    <span class="h-rule"></span>
+    <a class="h-link" href="/pricing/">Pricing</a>
+    <a class="h-link" href="/account/">Account</a>
+  </div>
+</div>
+<div class="h-content">
+  <div class="h-desk">
+    <div class="h-card hidden" id="h-out">
+      <div class="h-row">
+        <div class="h-left"><div class="h-name">Sign In to See Your Quizzes</div></div>
+        <div class="h-actions"><button class="h-btn" id="h-sign-in" type="button">{{G_ICON}}Sign In with Google</button></div>
+      </div>
+    </div>
+    <div class="h-card hidden" id="h-mine">
+      <div class="h-row">
+        <div class="h-left">
+          <div class="h-name">Your Quizzes</div>
+          <div class="h-count" id="h-mine-count"></div>
+          <div class="h-count" id="h-mine-stat"></div>
+        </div>
+        <div class="h-actions"><button class="h-btn" id="h-shuffle-all" type="button">Shuffle All</button></div>
+      </div>
+      <div class="h-list" id="h-mine-list"></div>
+    </div>
+    <div class="h-card hidden" id="h-shared">
+      <div class="h-row"><div class="h-left"><div class="h-name">Shared With You</div><div class="h-count" id="h-shared-count"></div></div></div>
+      <div class="h-list" id="h-shared-list"></div>
+    </div>
+    <div class="h-card hidden" id="h-history">
+      <div class="h-row keep">
+        <div class="h-left"><div class="h-name">Practice History</div><div class="h-count" id="h-history-count"></div></div>
+        <div class="h-actions"><button class="h-small" id="h-history-fold" type="button">Hide</button></div>
+      </div>
+      <div class="h-list" id="h-history-list"></div>
+    </div>
+    <form class="h-card h-ids hidden" id="h-ids">
+      <input id="h-ids-input" type="text" placeholder="Question IDs" aria-label="Question IDs" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <button class="h-btn" type="submit" id="h-ids-go" disabled>Start</button>
+    </form>
+    <p class="h-error hidden" id="h-error" role="alert"></p>
+  </div>
+</div>
+<div class="h-pickbar" id="h-pickbar">
+  <span class="h-pick-count" id="h-pick-count"></span>
+  <div class="h-seg" id="h-pick-only">
+    <button type="button" data-only="all"></button>
+    <button type="button" data-only="missed"></button>
+    <button type="button" data-only="unseen"></button>
+    <button type="button" data-only="flagged"></button>
+  </div>
+  <button class="h-btn" type="button" id="h-pick-go">Start</button>
+  <button class="h-btn outline" type="button" id="h-pick-clear">Clear</button>
+</div>
+</div>
+"""
+page("quiz/index.html", "Quiz", "Practice quizzes made from your lecture slides.", wide=True,
+     body="""<script>(function () { var p = new URLSearchParams(location.search), home = !p.get("id") && !p.get("set") && !p.get("q"); document.documentElement.classList.add(home ? "is-home" : "is-play"); if (home) { document.title = "Quizzes"; document.body.classList.add("qh"); } })();</script>
+""" + QUIZ_HOME + '<div class="play-only">\n' + top("Quiz", "quiz").replace("<h1>", '<h1 id="q-title">').replace("</h1>", '</h1>\n  <p class="q-sub muted hidden" id="q-sub"></p>') + f"""
 <div id="q-loading" class="muted center" style="margin-top:22px">Loading</div>
 
 <div id="q-out" class="hidden">
@@ -687,7 +546,11 @@ page("quiz/index.html", "Quiz", "A practice quiz made from lecture slides.", wid
   <button type="button" id="hl-del">Remove</button>
 </div>
 <p class="error hidden center" id="q-error" role="alert"></p>
-""", script='<script type="module" src="/assets/quiz.js?v=JSVER"></script>')
+</div>
+""", script="""<script type="module">
+const p = new URLSearchParams(location.search);
+if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=JSVER"); else import("/assets/home.js?v=HOMEVER");
+</script>""")
 
 # ------------------------------------------------------------------ link
 page("link/index.html", "Link Anki", "Link the PDF Occlusion add-on to your account.",

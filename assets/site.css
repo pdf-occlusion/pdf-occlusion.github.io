@@ -336,12 +336,6 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 }
 .list li a { overflow: hidden; text-overflow: ellipsis; }
 
-/* account: one line per quiz, its link button on the right */
-.quiz-list li { align-items: center; }
-.quiz-list li > div { min-width: 0; }
-.quiz-list li a { display: block; }
-.quiz-list .nowrap { white-space: nowrap; }
-button.small-btn { font-size: 0.85rem; padding: 4px 10px; flex: none; }
 
 /* pricing: what a credit buys */
 .costs { margin-bottom: 14px; }
@@ -382,36 +376,131 @@ button.small-btn { font-size: 0.85rem; padding: 4px 10px; flex: none; }
 .q-zoom .q-crop { cursor: zoom-out; border-color: transparent; }
 .q-zoom figcaption { color: #d9d4e4; }
 
-/* account: practice sets, questions by ID, practice history */
-.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.tick-all { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; color: var(--accent); cursor: pointer; }
-input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); flex: none; cursor: pointer; }
-.quiz-list li { gap: 12px; }
-.quiz-list li > div { flex: 1 1 auto; }
-.quiz-list .standing { display: block; color: var(--accent); }
-.pickbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
-.pick-count { font-weight: 600; font-size: 0.92rem; }
-.pick-go { display: inline-flex; gap: 8px; margin-left: auto; }
-.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.seg button { border: none; border-radius: 0; background: transparent; font-size: 0.85rem; padding: 5px 10px; }
-.seg button + button { border-left: 1px solid var(--line); }
-.seg button.on { background: var(--accent); color: #fff; }
-.seg button:disabled { background: transparent; color: var(--gray); }
-.ids-row { display: flex; gap: 8px; margin-top: 14px; }
-.ids-row input {
-  flex: 1 1 auto; min-width: 0; font: inherit; font-size: 0.95rem; color: var(--ink);
-  border: 1px solid var(--line); background: var(--card); border-radius: 10px; padding: 7px 12px;
+/* quiz home (/quiz/ with no quiz): the jeff front page. A bar across the
+   top, the student's quizzes grouped by month with a box to tick each, the
+   practice history, questions by ID, and the bar that starts a set. */
+.is-home .play-only, .is-play .home-only { display: none !important; }
+.is-home main.wide { max-width: none; padding: 0; }
+.is-home body::before { display: none; }
+.qh { --h-card: #f0ecf8; --h-line: #c5bee0; --h-field: #fbf9fe; }
+.qh button { font: inherit; line-height: normal; gap: 0; }
+.qh a:hover { text-decoration: none; }
+.qh .h-top {
+  position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; width: 100%; padding: 0.7rem 1.5rem; background: var(--h-card); border-bottom: 1px solid var(--h-line);
 }
-.ids-row input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-h4 { font-size: 0.92rem; font-weight: 600; color: var(--muted); margin: 12px 0 2px; }
-#practice h3 + div h4 { margin-top: 4px; }
-.test-list li { align-items: center; }
-.test-list li > div { min-width: 0; flex: 1 1 auto; }
-.test-list li a { display: block; }
-.test-list button.armed { color: var(--red); border-color: var(--red); }
-#signed-out #practice { margin-top: 30px; }
-@media (max-width: 520px) {
-  .pick-go { margin-left: 0; }
+.qh .h-top-left, .qh .h-top-right { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.qh .h-top-right { gap: 0.7rem; }
+.qh .h-back { font-size: 0.85rem; color: var(--accent); opacity: 0.7; white-space: nowrap; transition: opacity 0.15s; }
+.qh .h-back:hover { opacity: 1; }
+.qh .h-title { font-size: 0.95rem; color: var(--ink); }
+.qh .h-link {
+  display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border: 1px solid var(--h-line);
+  border-radius: 6px; font-size: 0.72rem; color: var(--accent); white-space: nowrap; transition: border-color 0.15s, background 0.15s;
+}
+.qh .h-link:hover { border-color: var(--accent); background: rgba(92, 79, 122, 0.06); }
+.qh .h-rule { align-self: stretch; width: 1px; margin: 0.15rem 0.1rem; background: var(--h-line); }
+.qh .h-who { font-size: 0.78rem; color: var(--accent); opacity: 0.7; text-transform: lowercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qh .h-who:empty, .qh .h-who:empty + .h-rule { display: none; }
+.qh .h-content { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 2rem 1.5rem 4rem; }
+.qh.picking .h-content { padding-bottom: 8rem; }
+.qh .h-desk { display: flex; flex-direction: column; gap: 0.65rem; width: 100%; max-width: 720px; }
+.qh .h-card {
+  display: flex; flex-direction: column; padding: 0.65rem 1rem; background: var(--h-card);
+  border: 1px solid var(--h-line); border-radius: 10px; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.qh .h-card:hover { border-color: var(--accent); box-shadow: 0 4px 16px rgba(92, 79, 122, 0.1); }
+.qh .h-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.qh .h-left { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.6rem; min-width: 0; }
+.qh .h-name { font-size: 1rem; color: var(--ink); }
+.qh .h-count { display: inline-flex; gap: 0.7em; font-size: 0.78rem; color: var(--accent); opacity: 0.7; white-space: nowrap; }
+.qh .h-count:empty { display: none; }
+.qh .h-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.qh .h-btn {
+  display: inline-flex; align-items: center; justify-content: center; height: 30px; padding: 0 12px; border: none; border-radius: 6px;
+  background: var(--accent); color: var(--h-card); font-size: 0.78rem; white-space: nowrap; transition: background-color 0.2s ease;
+}
+.qh .h-btn:hover:not(:disabled) { background: var(--accent-hi); }
+.qh .h-btn:active:not(:disabled) { background: var(--accent-lo); }
+.qh .h-btn.outline { background: transparent; border: 1px solid var(--h-line); color: var(--accent); }
+.qh .h-btn.outline:hover:not(:disabled) { border-color: var(--accent); background: rgba(92, 79, 122, 0.06); }
+.qh .h-btn .g-icon { margin-right: 8px; }
+.qh .h-list { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--h-line); }
+.qh .h-empty { font-size: 0.8rem; color: var(--accent); opacity: 0.6; padding: 0.3rem 0.5rem; }
+/* one quiz, or one test: name on the left, where you stand on the right */
+.qh .h-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.3rem 0.5rem;
+  border-radius: 5px; background: rgba(92, 79, 122, 0.06); font-size: 0.82rem; color: var(--accent); transition: background 0.15s;
+}
+.qh .h-item:hover { background: rgba(92, 79, 122, 0.14); }
+.qh .h-item.picked { background: rgba(92, 79, 122, 0.16); }
+.qh .h-item-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qh .h-item-sub { opacity: 0.65; }
+.qh .h-stat { display: inline-flex; gap: 0.7em; flex-shrink: 0; font-size: 0.72rem; opacity: 0.65; white-space: nowrap; }
+.qh .h-small {
+  height: 22px; padding: 0 9px; flex-shrink: 0; border-radius: 5px; background: transparent; border: 1px solid var(--h-line);
+  color: var(--accent); font-size: 0.68rem; white-space: nowrap; transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.qh .h-small:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: var(--h-card); }
+.qh .h-small.armed, .qh .h-small.armed:hover { background: transparent; border-color: var(--red); color: var(--red); }
+.qh .h-small:disabled { background: transparent; border-color: var(--h-line); color: #b5b5b5; }
+/* a month of quizzes, with a box that ticks the lot */
+.qh .h-group { display: flex; flex-direction: column; }
+.qh .h-group-head { display: flex; align-items: center; gap: 0.4rem; }
+.qh .h-group-title { display: flex; align-items: baseline; gap: 0.5rem; flex: 1 1 auto; min-width: 0; padding: 0.35rem 0.5rem; color: var(--ink); font-size: 0.85rem; }
+.qh .h-group-name { white-space: nowrap; }
+.qh .h-group-count { display: inline-flex; gap: 0.7em; margin-left: auto; font-size: 0.72rem; color: var(--accent); opacity: 0.55; white-space: nowrap; }
+.qh .h-group-items { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.15rem 0 0.4rem 1.2rem; }
+.qh .h-tick {
+  flex-shrink: 0; align-self: center; width: 0.8rem; height: 0.8rem; margin: -0.3rem 0; padding: 0.3rem;
+  box-sizing: content-box; background: none; border: none; border-radius: 0; cursor: pointer;
+}
+.qh .h-tick:hover { background: none; }
+.qh .h-tick::before {
+  content: ""; display: block; width: 100%; height: 100%; box-sizing: border-box; border: 1px solid var(--accent);
+  border-radius: 3px; opacity: 0.55; transition: background 0.12s, opacity 0.12s;
+}
+.qh .h-tick:hover::before { opacity: 1; }
+.qh .picked > .h-tick::before, .qh .h-tick.on::before { background: var(--accent); opacity: 1; }
+.qh .h-sub-head { padding: 0.45rem 0.5rem 0.15rem; font-size: 0.74rem; color: var(--accent); opacity: 0.6; }
+.qh .h-list > .h-sub-head:first-child { padding-top: 0.1rem; }
+.qh .h-card.shut > :not(.h-row) { display: none; }
+/* questions by ID */
+.qh .h-ids { flex-direction: row; align-items: center; gap: 0.4rem; }
+.qh .h-ids input {
+  flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 0.6rem; border: 1px solid var(--h-line); border-radius: 6px;
+  background: var(--h-field); color: var(--ink); font: inherit; font-size: 0.82rem; outline: none;
+}
+.qh .h-ids input:focus { border-color: var(--accent); }
+.qh .h-ids input::placeholder { color: var(--accent); opacity: 0.5; }
+/* nothing to start is plain gray */
+.qh .h-btn:disabled, .qh .h-btn:disabled:hover { background: #e4e4e4; border-color: #e4e4e4; color: #9a9a9a; cursor: default; }
+/* the set being picked, and what to play from it */
+.qh .h-pickbar {
+  position: fixed; left: 50%; bottom: 1rem; transform: translateX(-50%); z-index: 20; display: none; align-items: center;
+  justify-content: center; flex-wrap: wrap; gap: 0.6rem 0.8rem; width: max-content; max-width: calc(100% - 2rem);
+  padding: 0.6rem 0.8rem; background: var(--h-field); border: 1px solid var(--h-line); border-radius: 12px;
+  box-shadow: 0 10px 34px rgba(92, 79, 122, 0.22);
+}
+.qh .h-pickbar.open { display: flex; }
+.qh .h-pick-count { font-size: 0.8rem; color: var(--accent); white-space: nowrap; }
+.qh .h-seg { display: flex; border: 1px solid var(--h-line); border-radius: 6px; overflow: hidden; }
+.qh .h-seg button { height: 28px; padding: 0 10px; border: none; border-radius: 0; background: transparent; color: var(--accent); font-size: 0.74rem; white-space: nowrap; }
+.qh .h-seg button + button { border-left: 1px solid var(--h-line); }
+.qh .h-seg button:hover:not(:disabled) { background: rgba(92, 79, 122, 0.08); }
+.qh .h-seg button.on, .qh .h-seg button.on:hover { background: var(--accent); color: var(--h-card); }
+.qh .h-seg button:disabled { background: transparent; color: #b5b5b5; cursor: default; }
+.qh .h-error { font-size: 0.8rem; color: var(--red); text-align: center; }
+@media (max-width: 560px) {
+  .qh .h-top { flex-wrap: wrap; row-gap: 0.55rem; padding: 0.6rem 1rem; }
+  .qh .h-top-right { width: 100%; gap: 0.5rem; }
+  .qh .h-who, .qh .h-rule { display: none; }
+  .qh .h-content { padding: 1.25rem 1rem 4rem; }
+  .qh .h-group-count { display: none; }
+  .qh .h-row:not(.keep) { flex-direction: column; align-items: stretch; gap: 0.55rem; }
+  .qh .h-row:not(.keep) .h-actions > * { flex: 1 1 0; }
+  .qh .h-item-name { white-space: normal; overflow: visible; }
+  .qh .h-group-items { padding-left: 0.4rem; }
 }
 @media (max-width: 360px) {
   .q-buttons button { padding: 6px 8px; font-size: 0.85rem; }

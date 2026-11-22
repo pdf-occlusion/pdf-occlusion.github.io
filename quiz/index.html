@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quiz</title>
-<meta name="description" content="A practice quiz made from lecture slides.">
+<meta name="description" content="Practice quizzes made from your lecture slides.">
 <meta property="og:title" content="PDF Occlusion">
 <meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and practice quizzes.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
@@ -14,17 +14,81 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=5a19cb9d">
+<link rel="stylesheet" href="/assets/site.css?v=3b270818">
 </head>
 <body>
 <main class="wide">
-<script>(function () { var p = new URLSearchParams(location.search); if (!p.get("id") && !p.get("set") && !p.get("q")) location.replace("/account/"); })();</script>
+<script>(function () { var p = new URLSearchParams(location.search), home = !p.get("id") && !p.get("set") && !p.get("q"); document.documentElement.classList.add(home ? "is-home" : "is-play"); if (home) { document.title = "Quizzes"; document.body.classList.add("qh"); } })();</script>
+<div class="home-only qh-wrap">
+<div class="h-top">
+  <div class="h-top-left">
+    <a class="h-back" href="/">&larr; PDF Occlusion</a>
+    <div class="h-title">Quizzes</div>
+  </div>
+  <div class="h-top-right">
+    <span class="h-who" id="h-who"></span>
+    <span class="h-rule"></span>
+    <a class="h-link" href="/pricing/">Pricing</a>
+    <a class="h-link" href="/account/">Account</a>
+  </div>
+</div>
+<div class="h-content">
+  <div class="h-desk">
+    <div class="h-card hidden" id="h-out">
+      <div class="h-row">
+        <div class="h-left"><div class="h-name">Sign In to See Your Quizzes</div></div>
+        <div class="h-actions"><button class="h-btn" id="h-sign-in" type="button"><svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>Sign In with Google</button></div>
+      </div>
+    </div>
+    <div class="h-card hidden" id="h-mine">
+      <div class="h-row">
+        <div class="h-left">
+          <div class="h-name">Your Quizzes</div>
+          <div class="h-count" id="h-mine-count"></div>
+          <div class="h-count" id="h-mine-stat"></div>
+        </div>
+        <div class="h-actions"><button class="h-btn" id="h-shuffle-all" type="button">Shuffle All</button></div>
+      </div>
+      <div class="h-list" id="h-mine-list"></div>
+    </div>
+    <div class="h-card hidden" id="h-shared">
+      <div class="h-row"><div class="h-left"><div class="h-name">Shared With You</div><div class="h-count" id="h-shared-count"></div></div></div>
+      <div class="h-list" id="h-shared-list"></div>
+    </div>
+    <div class="h-card hidden" id="h-history">
+      <div class="h-row keep">
+        <div class="h-left"><div class="h-name">Practice History</div><div class="h-count" id="h-history-count"></div></div>
+        <div class="h-actions"><button class="h-small" id="h-history-fold" type="button">Hide</button></div>
+      </div>
+      <div class="h-list" id="h-history-list"></div>
+    </div>
+    <form class="h-card h-ids hidden" id="h-ids">
+      <input id="h-ids-input" type="text" placeholder="Question IDs" aria-label="Question IDs" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <button class="h-btn" type="submit" id="h-ids-go" disabled>Start</button>
+    </form>
+    <p class="h-error hidden" id="h-error" role="alert"></p>
+  </div>
+</div>
+<div class="h-pickbar" id="h-pickbar">
+  <span class="h-pick-count" id="h-pick-count"></span>
+  <div class="h-seg" id="h-pick-only">
+    <button type="button" data-only="all"></button>
+    <button type="button" data-only="missed"></button>
+    <button type="button" data-only="unseen"></button>
+    <button type="button" data-only="flagged"></button>
+  </div>
+  <button class="h-btn" type="button" id="h-pick-go">Start</button>
+  <button class="h-btn outline" type="button" id="h-pick-clear">Clear</button>
+</div>
+</div>
+<div class="play-only">
 <a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; Back</a>
 <div class="top small">
   <a href="/" aria-label="PDF Occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
   <h1 id="q-title">Quiz</h1>
   <p class="q-sub muted hidden" id="q-sub"></p>
   <nav class="links" aria-label="Main">
+    <a href="/quiz/" aria-current="page">Quizzes</a>
     <a href="/pricing/">Pricing</a>
     <a href="/account/">Account</a>
   </nav>
@@ -124,6 +188,7 @@
   <button type="button" id="hl-del">Remove</button>
 </div>
 <p class="error hidden center" id="q-error" role="alert"></p>
+</div>
 </main>
 <footer>
   <nav aria-label="Footer">
@@ -132,7 +197,10 @@
     <a href="mailto:pdf-occlusion-support@googlegroups.com">Help</a>
   </nav>
 </footer>
-<script type="module" src="/assets/quiz.js?v=f056d771"></script>
+<script type="module">
+const p = new URLSearchParams(location.search);
+if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=f056d771"); else import("/assets/home.js?v=9f278cc4");
+</script>
 <script>
 (function () {
   try {
