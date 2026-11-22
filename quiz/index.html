@@ -110,10 +110,12 @@ const r = (i) => (resp[i] = resp[i] || { selected: null, answered: false, struck
 // {page, box: [x, y, w, h] as fractions of the slide, caption, credit}: only
 // the box shows, at its own shape. Each slide is fetched once, when first shown.
 const slides = new Map();
-const slide = (page) => {
-  if (!slides.has(page)) slides.set(page, quizImage(quizId, page, { token, user }).catch((e) => { slides.delete(page); throw e; }));
-  return slides.get(page);
+const slide = (im) => {
+  const k = im.src || im.page;
+  if (!slides.has(k)) slides.set(k, quizImage(quizId, im, { token, user }).catch((e) => { slides.delete(k); throw e; }));
+  return slides.get(k);
 };
+addEventListener("pagehide", () => { for (const p of slides.values()) p.then(URL.revokeObjectURL, () => {}); slides.clear(); });
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, Number(v) || 0));
 function figure(im, big = false) {
   const b = Array.isArray(im.box) && im.box.length === 4 ? im.box : [0, 0, 1, 1];
@@ -134,7 +136,7 @@ function figure(im, big = false) {
   };
   size(16, 9);
   img.addEventListener("load", () => { size(img.naturalWidth, img.naturalHeight); crop.classList.add("ready"); });
-  slide(im.page).then((src) => { img.src = src; }).catch(() => fig.remove());
+  slide(im).then((src) => { img.src = src; }).catch(() => fig.remove());
   crop.append(img);
   fig.append(crop);
   if (!big) {

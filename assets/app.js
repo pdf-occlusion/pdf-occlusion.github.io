@@ -105,14 +105,14 @@ export async function api(path, { method = "GET", body, user } = {}) {
   return data;
 }
 
-// One slide image of a quiz, as an object URL for an <img>. The owner sends
-// their sign-in; anyone else needs the quiz's share token. The only place
-// that knows the image route.
-export async function quizImage(quizId, page, { token, user } = {}) {
-  const path = `/v1/quiz/${encodeURIComponent(quizId)}/image/${encodeURIComponent(page)}` + (token ? `?share=${encodeURIComponent(token)}` : "");
+// One slide image of a quiz, as an object URL for an <img>. The server gives
+// each image its `src` (with ?t= for shared links); an owner's own quiz needs
+// their sign-in, which a plain <img> cannot send, so it is always fetched.
+export async function quizImage(quizId, im, { token, user } = {}) {
+  const src = im.src || `${API}/v1/quiz/${encodeURIComponent(quizId)}/image/${encodeURIComponent(im.page)}` + (token ? `?t=${encodeURIComponent(token)}` : "");
   const headers = {};
   if (user) headers.authorization = `Bearer ${await user.getIdToken()}`;
-  const res = await fetch(API + path, { headers });
+  const res = await fetch(src, { headers });
   if (!res.ok) throw new Error(`Image failed (${res.status})`);
   return URL.createObjectURL(await res.blob());
 }
