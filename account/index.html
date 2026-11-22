@@ -94,7 +94,7 @@ const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
 const n = (x) => Number(x || 0).toLocaleString();
-const STYLES = { step1: "Basic science", shelf: "Clinical", recall: "Quick recall" };
+const STYLES = { step1: "Basic Science", shelf: "Clinical", recall: "Quick Recall", custom: "Custom" };
 $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
 $("sign-out").addEventListener("click", () => signOut());
 const paid = new URLSearchParams(location.search).get("paid");

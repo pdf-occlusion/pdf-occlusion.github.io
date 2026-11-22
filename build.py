@@ -132,7 +132,7 @@ page("index.html", "PDF Occlusion",
   <div class="panel outputs">
     <div><div class="name">Boxes</div><div class="what">Every label and key term covered on the page itself</div></div>
     <div><div class="name">Cards</div><div class="what">One fact per card, drawn from the text of each page</div></div>
-    <div><div class="name">Quiz</div><div class="what">Basic science, clinical or quick recall questions, with an explanation for every answer</div></div>
+    <div><div class="name">Quiz</div><div class="what">Basic Science, Clinical, Quick Recall or your own Custom style, with an explanation for every answer. For any course or exam, from Step 1 and COMLEX to NCLEX, PANCE and the MCAT.</div></div>
   </div>
 </section>
 
@@ -296,7 +296,7 @@ const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
 const n = (x) => Number(x || 0).toLocaleString();
-const STYLES = { step1: "Basic science", shelf: "Clinical", recall: "Quick recall" };
+const STYLES = { step1: "Basic Science", shelf: "Clinical", recall: "Quick Recall", custom: "Custom" };
 $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
 $("sign-out").addEventListener("click", () => signOut());
 const paid = new URLSearchParams(location.search).get("paid");
