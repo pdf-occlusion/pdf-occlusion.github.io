@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>pricing</title>
-<meta name="description" content="Your first 50 pages and 2 quizzes are free. Then $14.99 a month for 1,000 pages and 20 quizzes, $149.90 a year, or 400 pages for $9.99.">
-<meta property="og:title" content="pdf occlusion">
+<title>Pricing</title>
+<meta name="description" content="Start with 60 free credits. Monthly is $14.99 and Yearly is $149.90, each with 1,200 credits per month, or buy 400 credits for $9.99. Boxes and cards use 1 credit per slide; quizzes use 2 credits per question.">
+<meta property="og:title" content="PDF Occlusion">
 <meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and practice quizzes.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
 <meta property="og:url" content="https://pdf-occlusion.github.io/">
@@ -14,40 +14,45 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=101bf35f">
+<link rel="stylesheet" href="/assets/site.css?v=eea464d5">
 </head>
 <body>
 <main>
-<a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; back</a>
+<a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; Back</a>
 <div class="top small">
-  <a href="/" aria-label="pdf occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
-  <h1>pricing</h1>
+  <a href="/" aria-label="PDF Occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
+  <h1>Pricing</h1>
   <nav class="links" aria-label="Main">
-    <a href="/pricing/" aria-current="page">pricing</a>
-    <a href="/quiz/">quizzes</a>
-    <a href="/account/">account</a>
+    <a href="/pricing/" aria-current="page">Pricing</a>
+    <a href="/account/">Account</a>
   </nav>
 </div>
 
-<p class="lede">auto is counted in pages and quizzes. the add-on itself is free.</p>
+<p class="lede">Generate uses credits. The add-on itself is free.</p>
 
-<div class="panel" style="margin-top:30px">
+<div class="panel outputs costs" style="margin-top:30px">
+  <div><div class="name">Boxes</div><div class="what">1 credit per slide</div></div>
+  <div><div class="name">Cards</div><div class="what">1 credit per slide</div></div>
+  <div><div class="name">Quiz</div><div class="what">2 credits per question</div></div>
+</div>
+
+<div class="panel">
   <ul class="plain price-list">
     <li>
-      <div><div class="name">to start</div><div class="what">50 pages and 2 quizzes</div></div>
-      <div class="amount">free</div>
+      <div><div class="name">Starter</div><div class="what">60 credits for new accounts</div></div>
+      <div class="amount">Free</div>
     </li>
     <li>
-      <div><div class="name">monthly</div><div class="what">1,000 pages and 20 quizzes a month</div></div>
-      <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">subscribe</button></div>
+      <div><div class="name">Monthly</div><div class="what">1,200 credits per month</div></div>
+      <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">Subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">yearly</div><div class="what">1,000 pages and 20 quizzes a month, two months cheaper</div></div>
-      <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">subscribe</button></div>
+      <div><div class="name">Yearly</div><div class="what">1,200 credits per month, billed annually</div></div>
+      <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">Subscribe</button></div>
     </li>
     <li>
-      <div><div class="name">400 pages</div><div class="what">no expiry</div></div>
-      <div class="row" style="margin:0"><span class="amount">$9.99</span><button data-buy="pack">buy</button></div>
+      <div><div class="name">400 Credits</div><div class="what">Credits do not expire</div></div>
+      <div class="row" style="margin:0"><span class="amount">$9.99</span><button data-buy="pack">Buy</button></div>
     </li>
   </ul>
 </div>
@@ -55,19 +60,18 @@
 
 <section>
   <ul class="dots">
-    <li>Boxes and cards use 1 page per slide. A quiz uses 1 quiz, however long the lecture.</li>
-    <li>A plan's pages and quizzes reset each month. Extra pages are used once its pages run out.</li>
-    <li>Cancel any time from your account. The plan runs to the end of what you paid for.</li>
-    <li>Pages are counted as they are done, so a run you stop early only uses what was finished. A quiz is counted once its questions are ready.</li>
-    <li>Boxing by hand is always free.</li>
+    <li>Plan credits renew each month. Purchased credits are used after plan credits run out.</li>
+    <li>Cancel anytime from your account. Your plan stays active until the end of the billing period.</li>
+    <li>Slides are charged as they are completed, so stopping a run early only uses what was finished. A quiz has up to 40 questions and is charged once it is ready.</li>
+    <li>Placing boxes by hand is always free.</li>
   </ul>
 </section>
 </main>
 <footer>
   <nav aria-label="Footer">
-    <a href="/privacy/">privacy</a>
-    <a href="/terms/">terms</a>
-    <a href="mailto:pdf-occlusion-support@googlegroups.com">help</a>
+    <a href="/privacy/">Privacy</a>
+    <a href="/terms/">Terms</a>
+    <a href="mailto:pdf-occlusion-support@googlegroups.com">Help</a>
   </nav>
 </footer>
 <script type="module">
