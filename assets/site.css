@@ -239,6 +239,10 @@ button.q-choice {
   padding: 10px 14px; border-radius: 10px; line-height: 1.45;
 }
 .q-choice-text { -webkit-user-select: text; user-select: text; }
+/* touch: a long press strikes a choice, so no callout or text selection on it */
+@media (hover: none) and (pointer: coarse) {
+  button.q-choice, button.q-choice .q-choice-text { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+}
 .q-letter { color: var(--accent); font-weight: 600; min-width: 1em; }
 button.q-choice.selected { border-color: var(--accent); background: rgba(92, 79, 122, 0.1); }
 button.q-choice.struck .q-choice-text { text-decoration: line-through; color: var(--muted); }

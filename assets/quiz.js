@@ -488,12 +488,20 @@ function render() {
     b.append(tag, txt);
     // dragging across the words highlights rather than picks, as does a double click
     b.addEventListener("click", (e) => {
+      if (pressed(b)) { e.preventDefault(); return; }
       if (e.detail >= 2) return;
       const sel = getSelection();
       if (sel && !sel.isCollapsed && b.contains(sel.anchorNode)) return;
       pick(L);
     });
-    b.addEventListener("contextmenu", (e) => { e.preventDefault(); strike(L); });
+    b.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      // a touch long-press strikes once, whichever of it and the menu comes first
+      if (pressed(b)) return;
+      if (b._press && !b._press.done) { clearTimeout(b._press.timer); b._press.done = Date.now(); }
+      strike(L);
+    });
+    longPress(b, () => strike(L));
     box.append(b);
   }
   paintChoices();
@@ -503,6 +511,37 @@ function render() {
   bar();
   renderNav();
   saveSession();
+}
+
+// Touch: holding a choice for 450 ms strikes it out (right-click with a
+// mouse) without picking it; moving more than 10 px first is a scroll.
+const PRESS_MS = 450;
+// after a long press, until just after the finger lifts: the click that follows is not a pick
+const pressed = (b) => { const p = b._press; return !!(p && p.done && (!p.up || Date.now() - p.up < 500)); };
+function longPress(b, fn) {
+  const end = () => {
+    const p = b._press;
+    if (!p) return;
+    if (p.done) p.up = p.up || Date.now();
+    else { clearTimeout(p.timer); b._press = null; }
+  };
+  b.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "touch") return;
+    const p = { x: e.clientX, y: e.clientY, done: 0 };
+    p.timer = setTimeout(() => {
+      p.done = Date.now();
+      if (b.classList.contains("locked")) return;
+      fn();
+      navigator.vibrate?.(10);
+    }, PRESS_MS);
+    b._press = p;
+  });
+  b.addEventListener("pointermove", (e) => {
+    const p = b._press;
+    if (p && !p.done && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 10) end();
+  });
+  b.addEventListener("pointerup", end);
+  b.addEventListener("pointercancel", end);
 }
 
 function strike(L) {
@@ -955,7 +994,7 @@ $("q-share").addEventListener("click", async () => {
 
 // A to E (or 1 to 9) picks, Enter or Space submits then moves on, arrows
 // move, S skips, F flags (on the score, opens the first flagged), H
-// highlights the selected text. Right-click strikes a choice out.
+// highlights the selected text. Right-click (or a long press on touch) strikes a choice out.
 document.addEventListener("keydown", (e) => {
   if (zoomed) { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") { e.preventDefault(); unzoom(); } return; }
   if (e.key === "Escape") { hidePop(); return; }
