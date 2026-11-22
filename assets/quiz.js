@@ -2,10 +2,12 @@
 // in or not. Signed in, ?set=<id>,<id> plays several of your quizzes shuffled
 // together and ?q=<question ids> plays questions picked by id. ?only=missed,
 // unseen or flagged narrows any of them by your history here; ?test=<id>
-// reopens one test from the account page. Answers, flags, highlights and the
-// history of every try are kept in this browser only (practice.js).
+// reopens one test from the quiz home. Answers, flags, highlights and the
+// history of every try are kept in this browser (practice.js) and, signed
+// in, on the account so they follow you to other devices (sync.js).
 import { watchUser, signIn, api, quizImage } from "/assets/app.js";
 import * as P from "/assets/practice.js";
+import * as S from "/assets/sync.js";
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -31,7 +33,9 @@ let view = [], current = 0;
 // A redo narrows the view to the questions missed, cleared to answer again;
 // `showAll` widens it back onto the rest, which keep their answers.
 let redo = null, showAll = false;
-// One record per question: { selected, answered, struck, flagged, skipped, highlights }
+// One record per question: { selected, answered, struck, flagged, skipped,
+// highlights, u }; `u` is when its answer last changed, so two devices'
+// copies of a test keep each question's later answer.
 let responses = [];
 let resultsOpen = false;
 let owner = false;
@@ -43,6 +47,7 @@ function response(i) {
   if (!responses[i]) responses[i] = { selected: null, answered: false, struck: [], flagged: false, skipped: false, highlights: {} };
   return responses[i];
 }
+const bump = (r) => { r.u = Date.now(); return r; };
 
 // ------------------------------------------------ tests
 const SCOPE = (quizId ? `quiz-${quizId}` : setIds.length ? `set-${P.hash(setIds.slice().sort().join(","))}` : `ids-${P.hash(qids.slice().sort().join(","))}`) + (only ? `-${only}` : "");
@@ -74,8 +79,16 @@ function tally() {
 
 function saveSession() {
   const byKey = {};
+  // only what is set; a question put back to untouched keeps its time (u)
   responses.forEach((r, i) => {
-    if (touched(r)) byKey[qKey(questions[i])] = { selected: r.selected, answered: r.answered, struck: r.struck, skipped: r.skipped };
+    if (!r || !(touched(r) || r.u)) return;
+    const o = {};
+    if (r.selected) o.selected = r.selected;
+    if (r.answered) o.answered = true;
+    if (r.struck.length) o.struck = r.struck;
+    if (r.skipped) o.skipped = true;
+    if (r.u) o.u = r.u;
+    byKey[qKey(questions[i])] = o;
   });
   // an untouched test is not worth keeping; a touched one is, even reset
   if (!Object.keys(byKey).length && !P.test(RUN_KEY)) return;
@@ -124,7 +137,7 @@ function restoreSession(saved) {
   questions = known.concat(fresh);
   responses = questions.map((q) => {
     const r = saved.responses && saved.responses[qKey(q)];
-    return r ? { selected: r.selected || null, answered: !!r.answered, struck: Array.isArray(r.struck) ? r.struck : [], flagged: false, skipped: !!r.skipped, highlights: {} } : null;
+    return r ? { selected: r.selected || null, answered: !!r.answered, struck: Array.isArray(r.struck) ? r.struck : [], flagged: false, skipped: !!r.skipped, highlights: {}, ...(r.u ? { u: r.u } : {}) } : null;
   });
   const at = new Map(questions.map((q, i) => [qKey(q), i]));
   redo = Array.isArray(saved.redo) ? saved.redo.map((k) => at.get(k)).filter((i) => i !== undefined) : null;
@@ -197,6 +210,8 @@ async function load() {
     P.noteQuiz(z.id, { name: z.lecture || "Untitled PDF", n: z.questions.length, q: `id=${enc(z.id)}` + (z.id === quizId && token ? `&t=${enc(token)}` : "") });
     P.rememberQids(z.id, z.questions.length);
   }
+  // this quiz as left on your other devices
+  if (user) await S.pull(quizzes.map((z) => z.id));
   questions = quizzes.flatMap((z) => z.questions.map((q, i) => ({ ...q, _quiz: z.id, _i: i, _lecture: z.lecture })));
   if (qids.length) {
     const at = new Map(qids.map((id, i) => [id, i]));
@@ -494,6 +509,7 @@ function strike(L) {
   const x = response(cur());
   if (x.answered) return;
   x.struck = x.struck.includes(L) ? x.struck.filter((s) => s !== L) : [...x.struck, L];
+  bump(x);
   paintChoices(); actions(); saveSession();
 }
 
@@ -626,6 +642,7 @@ function pick(L) {
   if (x.answered) return;
   x.selected = L;
   x.struck = x.struck.filter((s) => s !== L);
+  bump(x);
   paintChoices(); actions(); saveSession();
 }
 
@@ -634,6 +651,7 @@ function submit() {
   if (!x.selected || x.answered) return;
   x.answered = true;
   x.skipped = false;
+  bump(x);
   stopTimer(); paintTimer();
   const q = questions[cur()];
   P.addAttempt(q._quiz, q._i, x.selected, x.selected === q.correct, RUN_KEY);
@@ -643,7 +661,7 @@ function submit() {
 function nextQuestion() {
   if (resultsOpen) return;
   const x = response(cur());
-  if (!x.answered) x.skipped = true;
+  if (!x.answered && !x.skipped) bump(x).skipped = true;
   current++;
   if (current >= view.length) { saveSession(); showResults(); }
   else { render(); scrollTo({ top: 0, behavior: "smooth" }); }
@@ -660,7 +678,7 @@ function prevQuestion() {
 function goTo(n) {
   if (n < 0 || n >= view.length) return;
   if (n === current && !resultsOpen) return;
-  if (!resultsOpen) { const x = response(cur()); if (!x.answered && n > current) x.skipped = true; }
+  if (!resultsOpen) { const x = response(cur()); if (!x.answered && !x.skipped && n > current) bump(x).skipped = true; }
   leaveResults();
   current = n;
   render();
@@ -680,6 +698,7 @@ function clearAnswer(i) {
   const r = responses[i];
   if (!r) return;
   r.selected = null; r.answered = false; r.skipped = false; r.struck = [];
+  bump(r);
 }
 function resetQuestion() {
   if (resultsOpen || !touched(responses[cur()])) return;
@@ -809,6 +828,8 @@ function showResults() {
   actions();
   renderNav();
   saveSession();
+  // a finished test goes to your other devices now
+  for (const id of new Set(questions.map((q) => q._quiz))) S.pushNow(id);
 }
 
 function reviewAnswers() {
@@ -966,5 +987,6 @@ document.addEventListener("keydown", (e) => {
 // last, so everything above is defined before the first callback
 watchUser((u) => {
   user = u;
+  S.setUser(u);
   if (!begun) { begun = true; load(); }
 });

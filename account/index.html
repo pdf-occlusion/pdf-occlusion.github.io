@@ -118,6 +118,7 @@
 <script type="module">
 import { watchUser, signIn, signOut, deleteSignIn, api, when } from "/assets/app.js";
 import * as P from "/assets/practice.js";
+import * as S from "/assets/sync.js";
 const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
@@ -345,6 +346,9 @@ async function copyLink(id, b) {
 }
 watchUser(async (u) => {
   user = u;
+  S.setUser(u);
+  // your practice from every device, then the lists again
+  if (u) S.pullAll().then(() => { practice(); quizzes(quizList); });
   $("signed-out").classList.toggle("hidden", !!u);
   $("signed-in").classList.toggle("hidden", !u);
   // practice history is this browser's, so it shows signed out too

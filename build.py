@@ -327,6 +327,7 @@ page("account/index.html", "Account", "Your quizzes, credits, plan and linked An
 """, script="""<script type="module">
 import { watchUser, signIn, signOut, deleteSignIn, api, when } from "/assets/app.js";
 import * as P from "/assets/practice.js";
+import * as S from "/assets/sync.js";
 const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
@@ -554,6 +555,9 @@ async function copyLink(id, b) {
 }
 watchUser(async (u) => {
   user = u;
+  S.setUser(u);
+  // your practice from every device, then the lists again
+  if (u) S.pullAll().then(() => { practice(); quizzes(quizList); });
   $("signed-out").classList.toggle("hidden", !!u);
   $("signed-in").classList.toggle("hidden", !u);
   // practice history is this browser's, so it shows signed out too
@@ -771,7 +775,7 @@ page("privacy/index.html", "Privacy Policy", "Privacy policy for PDF Occlusion."
     <li><b>Account information.</b> When you sign in, we receive your email address and an account identifier from the sign-in provider you choose.</li>
     <li><b>Submitted content.</b> When you use Generate to make boxes, cards or a quiz, the add-on transmits the text of every page of the PDF, a few page images to identify the document, images of the pages you select and the text found on them, the settings and instructions you choose, and any notes you attach ("Submitted Content"). To make them, the Service first works out what the document is and what each page teaches; those notes are part of Submitted Content.</li>
     <li><b>Usage records.</b> For each use of Generate we record the document name, the number of pages, the date and the credits consumed.</li>
-    <li><b>Quizzes.</b> When you make a quiz, we keep its questions, answers and explanations, with the document name, in your account so you can take it later on any device. A quiz may also keep images of the lecture slides used in its questions. If you share a quiz, anyone with its link can view it until you change the link. Your answers to a quiz are kept only in your browser.</li>
+    <li><b>Quizzes.</b> When you make a quiz, we keep its questions, answers and explanations, with the document name, in your account so you can take it later on any device. A quiz may also keep images of the lecture slides used in its questions. If you share a quiz, anyone with its link can view it until you change the link. Your answers to a quiz are kept in your browser and, when you are signed in, saved to your account so your progress follows you across devices.</li>
     <li><b>Installation identifiers.</b> Linking the add-on to your account creates a key stored on your device. We retain only a one-way fingerprint of that key. The add-on also sends a one-way fingerprint of your computer's hardware identifier, which we use to limit free credits to one allowance per computer; the identifier itself never leaves your computer.</li>
     <li><b>Usage statistics.</b> The add-on reports which of its buttons and features are used, page and card counts, errors, and its own, Anki's and your operating system's versions, tagged with the one-way computer fingerprint described above and, when you are signed in, your account. It does not report page images, file names, card text or anything you type. You can turn this off with the <code>usage_stats</code> setting in the add-on's config. This website records the pages you view, the links and buttons you click, whether signing in and linking worked, and the site that referred you, tagged with a random identifier stored in your browser.</li>
     <li><b>Payment information.</b> Payments are processed by a third-party payment processor. We do not receive or store full payment card numbers. We retain the customer and transaction identifiers needed to provide what you purchased.</li>
@@ -787,7 +791,7 @@ page("privacy/index.html", "Privacy Policy", "Privacy policy for PDF Occlusion."
   <p>We do not sell or rent personal information. We disclose information only (a) to service providers that host, authenticate, process payments or otherwise perform services on our behalf, subject to obligations of confidentiality; (b) where required by law, regulation, legal process or governmental request; (c) to protect the rights, property or safety of the Service, its users or others; (d) in connection with a merger, acquisition or sale of assets; or (e) with your consent.</p>
 
   <h2>6. Retention</h2>
-  <p>Account information, usage records and quizzes are retained for as long as your account is active. When you delete your account, they are deleted, except where retention is required by law or by our payment processor.</p>
+  <p>Account information, usage records, quizzes and quiz progress are retained for as long as your account is active. When you delete your account, they are deleted, except where retention is required by law or by our payment processor.</p>
 
   <h2>7. Security</h2>
   <p>We use reasonable administrative, technical and organizational measures to protect information. No method of transmission or storage is completely secure, and we cannot guarantee absolute security.</p>
