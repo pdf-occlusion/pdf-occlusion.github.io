@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quiz</title>
-<meta name="description" content="Practice quizzes made from your lecture slides.">
+<meta name="description" content="Quizzes made from your lecture slides.">
 <meta property="og:title" content="PDF Occlusion">
-<meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and practice quizzes.">
+<meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and quizzes.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
 <meta property="og:url" content="https://pdf-occlusion.github.io/">
 <meta name="twitter:card" content="summary_large_image">
@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=3b270818">
+<link rel="stylesheet" href="/assets/site.css?v=29bbfd12">
 </head>
 <body>
 <main class="wide">
@@ -28,6 +28,7 @@
   <div class="h-top-right">
     <span class="h-who" id="h-who"></span>
     <span class="h-rule"></span>
+    <button class="h-link" id="h-history-btn" type="button" aria-expanded="false">History</button>
     <a class="h-link" href="/pricing/">Pricing</a>
     <a class="h-link" href="/account/">Account</a>
   </div>
@@ -57,8 +58,8 @@
     </div>
     <div class="h-card hidden" id="h-history">
       <div class="h-row keep">
-        <div class="h-left"><div class="h-name">Practice History</div><div class="h-count" id="h-history-count"></div></div>
-        <div class="h-actions"><button class="h-small" id="h-history-fold" type="button">Hide</button></div>
+        <div class="h-left"><div class="h-name">History</div><div class="h-count" id="h-history-count"></div></div>
+        <div class="h-actions"><button class="h-small" id="h-history-close" type="button">Close</button></div>
       </div>
       <div class="h-list" id="h-history-list"></div>
     </div>
@@ -88,8 +89,8 @@
   <h1 id="q-title">Quiz</h1>
   <p class="q-sub muted hidden" id="q-sub"></p>
   <nav class="links" aria-label="Main">
-    <a href="/quiz/" aria-current="page">Quizzes</a>
     <a href="/pricing/">Pricing</a>
+    <a href="/quiz/" aria-current="page">Quizzes</a>
     <a href="/account/">Account</a>
   </nav>
 </div>
@@ -199,7 +200,7 @@
 </footer>
 <script type="module">
 const p = new URLSearchParams(location.search);
-if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=f056d771"); else import("/assets/home.js?v=9f278cc4");
+if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=f056d771"); else import("/assets/home.js?v=076d80e9");
 </script>
 <script>
 (function () {

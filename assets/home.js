@@ -164,20 +164,21 @@ function paintHistory() {
     list.append(el("div", "h-sub-head", name), ...rows);
   }
   $("h-history-count").textContent = tests.length ? plural(tests.length, "test", "tests") : "";
-  show("h-history", open.length + past.length + weak.length > 0);
+  const any = open.length + past.length + weak.length > 0;
+  $("h-history-btn").disabled = !any;
+  show("h-history", historyOpen);
 }
-// folded down to its title, and kept that way here
-const FOLD = "po-home-history-shut";
-function fold(shut) {
-  $("h-history").classList.toggle("shut", shut);
-  $("h-history-fold").textContent = shut ? "Show" : "Hide";
+// History opens from its button at the top; closed until asked for
+let historyOpen = false;
+function setHistory(open) {
+  historyOpen = open;
+  $("h-history-btn").setAttribute("aria-expanded", open ? "true" : "false");
+  $("h-history-btn").classList.toggle("on", open);
+  show("h-history", open);
+  if (open) $("h-history").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
-try { fold(localStorage.getItem(FOLD) === "1"); } catch {}
-$("h-history-fold").addEventListener("click", () => {
-  const shut = !$("h-history").classList.contains("shut");
-  fold(shut);
-  try { localStorage.setItem(FOLD, shut ? "1" : "0"); } catch {}
-});
+$("h-history-btn").addEventListener("click", () => setHistory(!historyOpen));
+$("h-history-close").addEventListener("click", () => setHistory(false));
 
 // ------------------------------------------------ practice sets
 let pickOnly = "all";

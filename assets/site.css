@@ -399,6 +399,9 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
   border-radius: 6px; font-size: 0.72rem; color: var(--accent); white-space: nowrap; transition: border-color 0.15s, background 0.15s;
 }
 .qh .h-link:hover { border-color: var(--accent); background: rgba(92, 79, 122, 0.06); }
+.qh button.h-link { background: transparent; cursor: pointer; }
+.qh .h-link.on { border-color: var(--accent); background: rgba(92, 79, 122, 0.1); }
+.qh button.h-link:disabled { color: #a3a1ab; border-color: #d9d7de; background: transparent; cursor: default; }
 .qh .h-rule { align-self: stretch; width: 1px; margin: 0.15rem 0.1rem; background: var(--h-line); }
 .qh .h-who { font-size: 0.78rem; color: var(--accent); opacity: 0.7; text-transform: lowercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .qh .h-who:empty, .qh .h-who:empty + .h-rule { display: none; }

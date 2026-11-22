@@ -17,7 +17,7 @@ HEAD = """<!doctype html>
 <title>{title}</title>
 <meta name="description" content="{desc}">
 <meta property="og:title" content="PDF Occlusion">
-<meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and practice quizzes.">
+<meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and quizzes.">
 <meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
 <meta property="og:url" content="https://pdf-occlusion.github.io/">
 <meta name="twitter:card" content="summary_large_image">
@@ -31,7 +31,7 @@ HEAD = """<!doctype html>
 <main>
 """
 
-NAV = [("Quizzes", "/quiz/", "quiz"), ("Pricing", "/pricing/", "pricing"), ("Account", "/account/", "account")]
+NAV = [("Pricing", "/pricing/", "pricing"), ("Quizzes", "/quiz/", "quiz"), ("Account", "/account/", "account")]
 
 # Page views and clicks, for the owner's statistics: a random id kept in this
 # browser, the page's path and where the visitor came from. No query string,
@@ -271,7 +271,7 @@ page("account/index.html", "Account", "Your credits, plan and linked Anki instal
   </div>
 
   <div class="panel quizzes-link">
-    <h3>Practice Quizzes</h3>
+    <h3>Quizzes</h3>
     <div class="row"><a class="btn primary" href="/quiz/">Open Quizzes</a></div>
   </div>
 
@@ -395,6 +395,7 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
   <div class="h-top-right">
     <span class="h-who" id="h-who"></span>
     <span class="h-rule"></span>
+    <button class="h-link" id="h-history-btn" type="button" aria-expanded="false">History</button>
     <a class="h-link" href="/pricing/">Pricing</a>
     <a class="h-link" href="/account/">Account</a>
   </div>
@@ -424,8 +425,8 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
     </div>
     <div class="h-card hidden" id="h-history">
       <div class="h-row keep">
-        <div class="h-left"><div class="h-name">Practice History</div><div class="h-count" id="h-history-count"></div></div>
-        <div class="h-actions"><button class="h-small" id="h-history-fold" type="button">Hide</button></div>
+        <div class="h-left"><div class="h-name">History</div><div class="h-count" id="h-history-count"></div></div>
+        <div class="h-actions"><button class="h-small" id="h-history-close" type="button">Close</button></div>
       </div>
       <div class="h-list" id="h-history-list"></div>
     </div>
@@ -449,7 +450,7 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
 </div>
 </div>
 """
-page("quiz/index.html", "Quiz", "Practice quizzes made from your lecture slides.", wide=True,
+page("quiz/index.html", "Quiz", "Quizzes made from your lecture slides.", wide=True,
      body="""<script>(function () { var p = new URLSearchParams(location.search), home = !p.get("id") && !p.get("set") && !p.get("q"); document.documentElement.classList.add(home ? "is-home" : "is-play"); if (home) { document.title = "Quizzes"; document.body.classList.add("qh"); } })();</script>
 """ + QUIZ_HOME + '<div class="play-only">\n' + top("Quiz", "quiz").replace("<h1>", '<h1 id="q-title">').replace("</h1>", '</h1>\n  <p class="q-sub muted hidden" id="q-sub"></p>') + f"""
 <div id="q-loading" class="muted center" style="margin-top:22px">Loading</div>
