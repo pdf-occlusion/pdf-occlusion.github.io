@@ -86,11 +86,18 @@ def top(name, current=None, small=True):
 """
 
 
-def page(path, title, desc, body, script=""):
-    body = body.replace("{G_ICON}", G_ICON)
+def version(name):
     import hashlib
-    css_v = hashlib.sha1(open(os.path.join(HERE, "assets/site.css"), "rb").read()).hexdigest()[:8]
-    html = HEAD.format(title=title, desc=desc).replace("CSSVER", css_v) + body + FOOT.format(script=(script + "\n" + BEACON).strip())
+    return hashlib.sha1(open(os.path.join(HERE, "assets", name), "rb").read()).hexdigest()[:8]
+
+
+def page(path, title, desc, body, script="", wide=False):
+    body = body.replace("{G_ICON}", G_ICON)
+    head = HEAD.format(title=title, desc=desc).replace("CSSVER", version("site.css"))
+    if wide:
+        head = head.replace("<main>", '<main class="wide">')
+    script = script.replace("JSVER", version("quiz.js"))
+    html = head + body + FOOT.format(script=(script + "\n" + BEACON).strip())
     out = os.path.join(HERE, path)
     os.makedirs(os.path.dirname(out) or HERE, exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
@@ -264,12 +271,39 @@ page("account/index.html", "Account", "Your quizzes, credits, plan and linked An
   </div>
 
   <div class="panel">
-    <h3>Practice Quizzes</h3>
+    <div class="panel-head">
+      <h3>Practice Quizzes</h3>
+      <label class="tick-all hidden" id="pick-all-wrap"><input type="checkbox" id="pick-all">Select All</label>
+    </div>
     <ul class="plain list quiz-list" id="quizzes"></ul>
     <p class="muted small hidden" id="no-quizzes">No quizzes yet.</p>
+    <div class="pickbar hidden" id="pickbar">
+      <span class="pick-count" id="pick-count"></span>
+      <div class="seg" id="pick-only">
+        <button type="button" data-only="all"></button>
+        <button type="button" data-only="missed"></button>
+        <button type="button" data-only="unseen"></button>
+        <button type="button" data-only="flagged"></button>
+      </div>
+      <span class="pick-go">
+        <button type="button" class="primary" id="pick-go">Start</button>
+        <button type="button" id="pick-clear">Clear</button>
+      </span>
+    </div>
+    <form class="ids-row hidden" id="ids-row">
+      <input id="ids-input" type="text" placeholder="Question IDs" aria-label="Question IDs" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <button type="submit" id="ids-go" disabled>Start</button>
+    </form>
   </div>
 
-  <div class="panel">
+  <div class="panel hidden" id="practice">
+    <h3>Practice History</h3>
+    <div class="hidden" id="open-sec"><h4>In Progress</h4><ul class="plain list test-list" id="open-list"></ul></div>
+    <div class="hidden" id="weak-sec"><h4>Weakest Quizzes</h4><ul class="plain list test-list" id="weak-list"></ul></div>
+    <div class="hidden" id="past-sec"><h4>Past Tests</h4><ul class="plain list test-list" id="past-list"></ul></div>
+  </div>
+
+  <div class="panel" id="devices-panel">
     <h3>Anki Installs</h3>
     <ul class="plain list" id="devices"></ul>
     <p class="muted small hidden" id="no-devices">No installs linked yet.</p>
@@ -292,6 +326,7 @@ page("account/index.html", "Account", "Your quizzes, credits, plan and linked An
 <p class="error hidden center" id="acct-error" role="alert"></p>
 """, script="""<script type="module">
 import { watchUser, signIn, signOut, deleteSignIn, api, when } from "/assets/app.js";
+import * as P from "/assets/practice.js";
 const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
@@ -349,10 +384,18 @@ async function load() {
   }
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
 }
+let quizList = [];
 function quizzes(list) {
+  quizList = list;
   const ul = $("quizzes"); ul.replaceChildren();
   for (const q of list) {
     const li = document.createElement("li");
+    li.dataset.id = q.id;
+    const tick = document.createElement("input");
+    tick.type = "checkbox";
+    tick.className = "pick";
+    tick.setAttribute("aria-label", `Add ${q.lecture || "this quiz"} to a practice set`);
+    tick.addEventListener("change", paintPick);
     const text = document.createElement("div");
     const a = document.createElement("a");
     a.href = `/quiz/?id=${encodeURIComponent(q.id)}`;
@@ -363,16 +406,142 @@ function quizzes(list) {
     date.className = "nowrap";
     date.textContent = when(q.created_at);
     meta.append([STYLES[q.style], `${q.n_questions} ${q.n_questions === 1 ? "question" : "questions"}`].filter(Boolean).join(", ") + ", ", date);
+    const st = P.stats(q.id, q.n_questions);
+    if (st.seen) {
+      const standing = document.createElement("span");
+      standing.className = "standing";
+      standing.textContent = `${st.seen} of ${q.n_questions} tried, ${Math.round((st.right / st.seen) * 100)}% correct`;
+      meta.append(standing);
+    }
     text.append(a, meta);
     const share = document.createElement("button");
     share.className = "small-btn";
     share.textContent = "Copy Link";
     share.addEventListener("click", () => copyLink(q.id, share));
-    li.append(text, share);
+    li.append(tick, text, share);
     ul.append(li);
   }
   $("no-quizzes").classList.toggle("hidden", list.length > 0);
+  $("pick-all-wrap").classList.toggle("hidden", list.length < 2);
+  $("ids-row").classList.toggle("hidden", !list.length);
+  paintPick();
 }
+
+// ------------------------------------------------ practice sets
+// Tick quizzes to play them shuffled together, all of their questions or
+// only the ones missed, never tried or flagged here.
+let pickOnly = "all";
+const picked = () => [...document.querySelectorAll("#quizzes input.pick:checked")].map((t) => t.closest("li").dataset.id);
+function counts(ids) {
+  const c = { all: 0, missed: 0, unseen: 0, flagged: 0 };
+  for (const id of ids) {
+    const n = (quizList.find((q) => q.id === id) || {}).n_questions || 0;
+    const st = P.stats(id, n);
+    c.all += n; c.missed += st.seen - st.right; c.unseen += Math.max(0, n - st.seen); c.flagged += st.flagged;
+  }
+  return c;
+}
+const ONLY = { all: "All", missed: "Missed", unseen: "Unseen", flagged: "Flagged" };
+function paintPick() {
+  const ids = picked();
+  $("pickbar").classList.toggle("hidden", !ids.length);
+  const all = document.querySelectorAll("#quizzes input.pick");
+  $("pick-all").checked = all.length > 0 && ids.length === all.length;
+  if (!ids.length) { pickOnly = "all"; return; }
+  const c = counts(ids);
+  if (!c[pickOnly]) pickOnly = "all";
+  $("pick-count").textContent = `${ids.length} ${ids.length === 1 ? "Quiz" : "Quizzes"}`;
+  for (const b of document.querySelectorAll("#pick-only button")) {
+    const k = b.dataset.only;
+    b.textContent = `${ONLY[k]} ${c[k]}`;
+    b.disabled = !c[k];
+    b.classList.toggle("on", k === pickOnly && !!c[k]);
+  }
+  $("pick-go").disabled = !c[pickOnly];
+}
+$("pick-only").addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b || b.disabled) return;
+  pickOnly = b.dataset.only;
+  paintPick();
+});
+$("pick-all").addEventListener("change", () => {
+  for (const t of document.querySelectorAll("#quizzes input.pick")) t.checked = $("pick-all").checked;
+  paintPick();
+});
+$("pick-clear").addEventListener("click", () => {
+  for (const t of document.querySelectorAll("#quizzes input.pick")) t.checked = false;
+  paintPick();
+});
+$("pick-go").addEventListener("click", () => {
+  const ids = picked();
+  if (!ids.length) return;
+  const what = ids.length === 1 ? `id=${encodeURIComponent(ids[0])}` : `set=${ids.map(encodeURIComponent).join(",")}`;
+  location.href = `/quiz/?${what}` + (pickOnly !== "all" ? `&only=${pickOnly}` : "");
+});
+
+// Questions by the IDs shown on each question, typed or pasted.
+const typedIds = () => [...new Set($("ids-input").value.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean))];
+$("ids-input").addEventListener("input", () => { $("ids-go").disabled = !typedIds().length; });
+$("ids-row").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const ids = typedIds();
+  if (ids.length) location.href = `/quiz/?q=${ids.join(",")}`;
+});
+
+// ------------------------------------------------ practice history
+// Tests in progress and finished, and the quizzes you do worst on, from
+// this browser only.
+const pct = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : "");
+function testRow(href, title, sub, how, del) {
+  const li = document.createElement("li");
+  const text = document.createElement("div");
+  const a = document.createElement("a");
+  a.href = href;
+  a.textContent = title || "Quiz";
+  text.append(a);
+  const meta = document.createElement("div");
+  meta.className = "muted small";
+  meta.textContent = [sub, ...how].filter(Boolean).join(", ");
+  text.append(meta);
+  li.append(text);
+  if (del) {
+    const b = document.createElement("button");
+    b.className = "small-btn";
+    b.textContent = "Delete";
+    b.addEventListener("click", () => {
+      if (!b.classList.contains("armed")) {
+        for (const x of document.querySelectorAll(".test-list .armed")) { x.classList.remove("armed"); x.textContent = "Delete"; }
+        b.classList.add("armed");
+        b.textContent = "Confirm Delete";
+        return;
+      }
+      P.deleteTest(del);
+      practice();
+      quizzes(quizList);
+    });
+    li.append(b);
+  }
+  return li;
+}
+function fill(name, rows) {
+  $(`${name}-list`).replaceChildren(...rows);
+  $(`${name}-sec`).classList.toggle("hidden", !rows.length);
+  return rows.length;
+}
+function practice() {
+  const tests = P.listTests();
+  const line = (t) => testRow(`/quiz/?${t.q}&test=${encodeURIComponent(t.id)}`, t.where, t.label,
+    [`${t.right + t.wrong} of ${t.n} answered`, t.right + t.wrong ? `${pct(t.right, t.right + t.wrong)} correct` : "", when(t.updated)], t.id);
+  const open = fill("open", tests.filter((t) => !t.done && !t.ended).map(line));
+  const past = fill("past", tests.filter((t) => t.done || t.ended).map(line));
+  const weak = P.quizzesPlayed().filter((z) => z.q && z.seen >= 5 && z.right < z.seen)
+    .sort((a, b) => a.right / a.seen - b.right / b.seen).slice(0, 5)
+    .map((z) => testRow(`/quiz/?${z.q}&only=missed`, z.name, "", [`${z.seen - z.right} missed`, `${pct(z.right, z.seen)} correct`]));
+  const w = fill("weak", weak);
+  $("practice").classList.toggle("hidden", !(open || past || w));
+}
+practice();
 async function copyLink(id, b) {
   b.disabled = true;
   try {
@@ -387,6 +556,9 @@ watchUser(async (u) => {
   user = u;
   $("signed-out").classList.toggle("hidden", !!u);
   $("signed-in").classList.toggle("hidden", !u);
+  // practice history is this browser's, so it shows signed out too
+  if (u) $("signed-in").insertBefore($("practice"), $("devices-panel"));
+  else $("signed-out").append($("practice"));
   if (u) load().catch((e) => err(e.message));
 });
 async function go(path, body) {
@@ -414,9 +586,9 @@ $("unlink").addEventListener("click", async () => {
 # ------------------------------------------------------------------ quiz
 # /quiz/?id=...(&t=share token) plays one quiz, signed in or not. Without an
 # id, /quiz/ goes to the account page, which lists the quizzes.
-page("quiz/index.html", "Quiz", "A practice quiz made from lecture slides.",
-     body="""<script>if (!new URLSearchParams(location.search).get("id")) location.replace("/account/");</script>
-""" + top("Quiz") + f"""
+page("quiz/index.html", "Quiz", "A practice quiz made from lecture slides.", wide=True,
+     body="""<script>(function () { var p = new URLSearchParams(location.search); if (!p.get("id") && !p.get("set") && !p.get("q")) location.replace("/account/"); })();</script>
+""" + top("Quiz").replace("<h1>", '<h1 id="q-title">').replace("</h1>", '</h1>\n  <p class="q-sub muted hidden" id="q-sub"></p>') + f"""
 <div id="q-loading" class="muted center" style="margin-top:22px">Loading</div>
 
 <div id="q-out" class="hidden">
@@ -426,325 +598,92 @@ page("quiz/index.html", "Quiz", "A practice quiz made from lecture slides.",
 
 <div id="q-play" class="hidden">
   <div class="q-bar">
-    <span id="q-pos"></span>
-    <span id="q-score"></span>
+    <span id="q-progress-label"></span>
+    <button class="q-tool" id="q-reset-test" title="Clear every answer in this test" disabled>Reset Test</button>
   </div>
   <div class="q-progress"><div id="q-fill"></div></div>
 
-  <div class="panel q-card" id="q-card">
-    <p class="q-stem" id="q-stem"></p>
-    <div id="q-img"></div>
-    <div id="q-table"></div>
-    <div class="q-choices" id="q-choices"></div>
-    <div class="q-exp hidden" id="q-exp"></div>
-    <div class="row q-actions">
-      <button id="q-back">Back</button>
-      <button class="primary" id="q-submit" disabled>Submit</button>
-      <button class="primary hidden" id="q-next">Next</button>
+  <div class="q-layout">
+    <aside class="q-rail" aria-label="Questions">
+      <div class="q-rail-title">Questions</div>
+      <div class="q-scope hidden" id="q-scope"><button type="button" id="q-scope-redo"></button><button type="button" id="q-scope-all"></button></div>
+      <div class="q-counts hidden" id="q-counts"></div>
+      <div class="q-grid" id="q-grid"></div>
+      <div class="q-legend">
+        <span><i class="q-sw right"></i>Correct</span>
+        <span><i class="q-sw wrong"></i>Incorrect</span>
+        <span><i class="q-sw skipped"></i>Skipped</span>
+        <span><i class="q-flag-key">&#9873;</i>Flagged</span>
+      </div>
+    </aside>
+
+    <div class="q-main">
+      <div class="panel q-card" id="q-card">
+        <div class="q-top">
+          <span class="q-meta" id="q-meta"></span>
+          <span class="q-tools">
+            <button type="button" class="q-tool q-timer" id="q-timer" aria-pressed="false">1:30</button>
+            <button type="button" class="q-tool q-id" id="q-id" title="Copy this question's ID"></button>
+          </span>
+        </div>
+        <div class="q-hist" id="q-hist"></div>
+        <p class="q-stem" id="q-stem"></p>
+        <div id="q-table"></div>
+        <div id="q-img"></div>
+        <div class="q-choices" id="q-choices"></div>
+        <div class="q-exp hidden" id="q-exp">
+          <h3>Explanations</h3>
+          <div id="q-exp-items"></div>
+        </div>
+        <div class="q-actions">
+          <span class="q-score" id="q-score"></span>
+          <span class="q-buttons">
+            <button type="button" class="q-flag" id="q-flag" aria-pressed="false">Flag</button>
+            <button type="button" id="q-reset" title="Clear your answer to this question">Reset</button>
+            <button type="button" id="q-back" title="Previous question (Left Arrow)">Back</button>
+            <button type="button" class="primary" id="q-submit" title="Submit (Enter)" disabled>Submit</button>
+            <button type="button" id="q-next">Skip</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="panel q-result hidden" id="q-result">
+        <h2>Quiz Complete</h2>
+        <div class="q-donut">
+          <svg width="148" height="148" viewBox="0 0 148 148" aria-hidden="true">
+            <circle cx="74" cy="74" r="60" fill="none" class="q-donut-track" stroke-width="14"/>
+            <circle cx="74" cy="74" r="60" fill="none" class="q-donut-arc" stroke-width="14" stroke-dasharray="376.99" stroke-dashoffset="376.99" stroke-linecap="round" id="r-arc"/>
+          </svg>
+          <div class="q-donut-label"><div class="q-donut-pct" id="r-pct">0%</div><div class="muted small">Score</div></div>
+        </div>
+        <div class="q-stats">
+          <div><div class="v right" id="r-correct">0</div><div class="l">Correct</div></div>
+          <div><div class="v wrong" id="r-wrong">0</div><div class="l">Incorrect</div></div>
+          <div><div class="v" id="r-skipped">0</div><div class="l">Skipped</div></div>
+          <div><div class="v" id="r-flagged">0</div><div class="l">Flagged</div></div>
+          <div><div class="v" id="r-total">0</div><div class="l">Answered</div></div>
+        </div>
+        <div class="row center">
+          <button type="button" id="r-review">Review Answers</button>
+          <button type="button" class="hidden" id="r-flagged-btn">Review Flagged</button>
+          <button type="button" class="hidden" id="r-skipped-btn">Review Skipped</button>
+          <button type="button" class="hidden" id="r-redo">Redo Missed</button>
+          <button type="button" class="primary" id="r-again">Start Over</button>
+        </div>
+      </div>
+
+      <div class="row center" style="margin-top:22px">
+        <button class="hidden" id="q-share">Copy Share Link</button>
+      </div>
     </div>
-  </div>
-
-  <div class="panel q-result hidden" id="q-result">
-    <div class="left" id="r-pct"></div>
-    <div class="muted" id="r-line"></div>
-    <div class="row center">
-      <button id="r-review">Review</button>
-      <button id="r-missed">Retry Missed</button>
-      <button id="r-again">Start Over</button>
-    </div>
-  </div>
-
-  <ol class="q-nav" id="q-nav" aria-label="Questions"></ol>
-
-  <div class="row center" style="margin-top:22px">
-    <button class="hidden" id="q-share">Copy Share Link</button>
   </div>
 </div>
+<div class="hl-pop" id="hl-pop" role="toolbar" aria-label="Highlight">
+  <button type="button" id="hl-add"><i class="dot"></i>Highlight</button>
+  <button type="button" id="hl-del">Remove</button>
+</div>
 <p class="error hidden center" id="q-error" role="alert"></p>
-""", script="""<script type="module">
-import { watchUser, signIn, api, quizImage } from "/assets/app.js";
-const $ = (id) => document.getElementById(id);
-const params = new URLSearchParams(location.search);
-const quizId = params.get("id");
-const token = params.get("t");
-const show = (id) => { for (const k of ["q-loading", "q-out", "q-play"]) $(k).classList.toggle("hidden", k !== id); };
-const err = (m) => { $("q-error").textContent = m; $("q-error").classList.remove("hidden"); };
-let user = null;
-let started = false;
-
-$("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
-
-watchUser((u) => {
-  user = u;
-  if (quizId && !started) { started = true; openQuiz(); }
-});
-
-// ------------------------------------------------ playing
-let quiz = null, order = [], cur = 0, resp = {}, resultsOpen = false;
-const key = () => `po-quiz-${quizId}`;
-const save = () => { try { localStorage.setItem(key(), JSON.stringify({ resp, order, cur })); } catch {} };
-const restore = () => { try { return JSON.parse(localStorage.getItem(key()) || "null"); } catch { return null; } };
-const r = (i) => (resp[i] = resp[i] || { selected: null, answered: false, struck: [] });
-
-// ------------------------------------------------ slide images
-// {page, box: [x, y, w, h] as fractions of the slide, caption, credit}: only
-// the box shows, at its own shape. Each slide is fetched once, when first shown.
-const slides = new Map();
-const slide = (im) => {
-  const k = im.src || im.page;
-  if (!slides.has(k)) slides.set(k, quizImage(quizId, im, { token, user }).catch((e) => { slides.delete(k); throw e; }));
-  return slides.get(k);
-};
-addEventListener("pagehide", () => { for (const p of slides.values()) p.then(URL.revokeObjectURL, () => {}); slides.clear(); });
-const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, Number(v) || 0));
-function figure(im, big = false) {
-  const b = Array.isArray(im.box) && im.box.length === 4 ? im.box : [0, 0, 1, 1];
-  const x = clamp(b[0], 0, 0.99), y = clamp(b[1], 0, 0.99);
-  const w = Number(b[2]) > 0 ? clamp(b[2], 0.01, 1 - x) : 1 - x, h = Number(b[3]) > 0 ? clamp(b[3], 0.01, 1 - y) : 1 - y;
-  const fig = document.createElement("figure");
-  fig.className = "q-fig";
-  const crop = document.createElement("div");
-  crop.className = "q-crop";
-  const img = document.createElement("img");
-  img.alt = im.caption || "Slide";
-  Object.assign(img.style, { width: `${100 / w}%`, height: `${100 / h}%`, left: `${(-x / w) * 100}%`, top: `${(-y / h) * 100}%` });
-  // the box's shape on a 16:9 slide until the real one is known
-  const size = (W, H) => {
-    const ratio = (w * W) / (h * H);
-    crop.style.aspectRatio = String(ratio);
-    crop.style.width = big ? `min(100%, ${ratio * 78}vh)` : `min(100%, ${ratio * 46}vh)`;
-  };
-  size(16, 9);
-  img.addEventListener("load", () => { size(img.naturalWidth, img.naturalHeight); crop.classList.add("ready"); });
-  slide(im).then((src) => { img.src = src; }).catch(() => fig.remove());
-  crop.append(img);
-  fig.append(crop);
-  if (!big) {
-    crop.tabIndex = 0;
-    crop.setAttribute("role", "button");
-    crop.setAttribute("aria-label", "view larger");
-    crop.addEventListener("click", () => zoom(im));
-    crop.addEventListener("keydown", (e) => { if (!zoomed && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); zoom(im); } });
-  }
-  if (im.caption || im.credit) {
-    const cap = document.createElement("figcaption");
-    if (im.caption) { const c = document.createElement("span"); c.textContent = im.caption; cap.append(c); }
-    if (im.credit) { const c = document.createElement("span"); c.className = "q-credit"; c.textContent = im.credit; cap.append(c); }
-    fig.append(cap);
-  }
-  return fig;
-}
-let zoomed = null;
-function zoom(im) {
-  zoomed = document.createElement("div");
-  zoomed.className = "q-zoom";
-  zoomed.append(figure(im, true));
-  zoomed.addEventListener("click", unzoom);
-  document.body.append(zoomed);
-}
-function unzoom() { zoomed?.remove(); zoomed = null; }
-
-async function openQuiz() {
-  try {
-    quiz = await api(`/v1/quiz/${encodeURIComponent(quizId)}${token ? `?t=${encodeURIComponent(token)}` : ""}`, { user });
-  } catch (e) {
-    // someone else's link without its token, or the owner signed out: sign in, then try again
-    if (e.status === 404 && !user && !token) { started = false; show("q-out"); return; }
-    show("");
-    err(e.status === 404 ? "This quiz does not exist, or its link has changed." : e.message);
-    return;
-  }
-  document.title = quiz.lecture || "Quiz";
-  document.querySelector(".top h1").textContent = quiz.lecture || "Quiz";
-  const n = quiz.questions.length;
-  const saved = restore();
-  if (saved && Array.isArray(saved.order) && saved.order.length && saved.order.every((i) => i < n)) {
-    resp = saved.resp || {}; order = saved.order; cur = Math.min(saved.cur || 0, order.length - 1);
-  } else {
-    order = quiz.questions.map((_, i) => i);
-  }
-  $("q-share").classList.toggle("hidden", !quiz.owner);
-  show("q-play");
-  render();
-}
-
-function tally() {
-  let right = 0, done = 0;
-  for (const i of order) { const x = resp[i]; if (x && x.answered) { done++; if (x.selected === quiz.questions[i].correct) right++; } }
-  return { right, done };
-}
-
-function bar() {
-  const { right, done } = tally();
-  $("q-pos").textContent = resultsOpen ? "Done" : `${cur + 1} of ${order.length}`;
-  $("q-score").textContent = done ? `${right} of ${done} correct` : "";
-  $("q-fill").style.width = `${(done / order.length) * 100}%`;
-}
-
-function table(rows) {
-  const t = document.createElement("table");
-  t.className = "q-tbl";
-  rows.forEach((row, ri) => {
-    const tr = document.createElement("tr");
-    for (const c of row) { const cell = document.createElement(ri === 0 ? "th" : "td"); cell.textContent = c; tr.append(cell); }
-    t.append(tr);
-  });
-  const wrap = document.createElement("div");
-  wrap.className = "q-tbl-wrap";
-  wrap.append(t);
-  return wrap;
-}
-
-function render() {
-  resultsOpen = false;
-  $("q-result").classList.add("hidden");
-  $("q-card").classList.remove("hidden");
-  const i = order[cur], q = quiz.questions[i], x = r(i);
-  $("q-stem").textContent = q.question;
-  $("q-img").replaceChildren(...(q.image ? [figure(q.image)] : []));
-  $("q-table").replaceChildren(...(q.table ? [table(q.table)] : []));
-  const box = $("q-choices"); box.replaceChildren();
-  for (const L of Object.keys(q.answers)) {
-    const b = document.createElement("button");
-    b.className = "q-choice";
-    b.dataset.letter = L;
-    const tag = document.createElement("span"); tag.className = "q-letter"; tag.textContent = L;
-    const txt = document.createElement("span"); txt.textContent = q.answers[L];
-    b.append(tag, txt);
-    b.addEventListener("click", () => pick(L));
-    b.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      if (x.answered) return;
-      x.struck = x.struck.includes(L) ? x.struck.filter((s) => s !== L) : [...x.struck, L];
-      paint(); save();
-    });
-    box.append(b);
-  }
-  paint();
-  bar(); nav(); save();
-}
-
-function paint() {
-  const i = order[cur], q = quiz.questions[i], x = r(i);
-  for (const b of document.querySelectorAll(".q-choice")) {
-    const L = b.dataset.letter;
-    b.classList.toggle("selected", !x.answered && x.selected === L);
-    b.classList.toggle("struck", !x.answered && x.struck.includes(L));
-    b.classList.toggle("right", x.answered && L === q.correct);
-    b.classList.toggle("wrong", x.answered && L === x.selected && L !== q.correct);
-    b.disabled = x.answered;
-  }
-  const exp = $("q-exp");
-  exp.replaceChildren();
-  if (x.answered) {
-    for (const L of Object.keys(q.answers)) {
-      const p = document.createElement("p");
-      p.className = L === q.correct ? "right" : "";
-      const tag = document.createElement("b"); tag.textContent = `${L}. `;
-      p.append(tag, document.createTextNode(q.explanations?.[L] || ""));
-      exp.append(p);
-    }
-    if (q.explanationImage) exp.append(figure(q.explanationImage));
-    if (q.page) { const p = document.createElement("p"); p.className = "muted small"; p.textContent = `Slide ${q.page}`; exp.append(p); }
-  }
-  exp.classList.toggle("hidden", !x.answered);
-  $("q-submit").classList.toggle("hidden", x.answered);
-  $("q-submit").disabled = !x.selected;
-  $("q-next").classList.toggle("hidden", !x.answered);
-  $("q-next").textContent = cur === order.length - 1 ? "See Score" : "Next";
-  $("q-back").disabled = cur === 0;
-}
-
-function pick(L) {
-  const x = r(order[cur]);
-  if (x.answered) return;
-  x.selected = L; x.struck = x.struck.filter((s) => s !== L);
-  paint(); save();
-}
-
-function submit() {
-  const x = r(order[cur]);
-  if (!x.selected || x.answered) return;
-  x.answered = true;
-  paint(); bar(); nav(); save();
-}
-
-function go(n) {
-  if (n < 0) return;
-  if (n >= order.length) { results(); return; }
-  cur = n; render();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function nav() {
-  const ol = $("q-nav"); ol.replaceChildren();
-  order.forEach((i, n) => {
-    const li = document.createElement("li");
-    const b = document.createElement("button");
-    b.textContent = n + 1;
-    b.setAttribute("aria-label", `question ${n + 1}`);
-    const x = resp[i];
-    if (x && x.answered) b.className = x.selected === quiz.questions[i].correct ? "right" : "wrong";
-    if (n === cur && !resultsOpen) b.setAttribute("aria-current", "true");
-    b.addEventListener("click", () => go(n));
-    li.append(b); ol.append(li);
-  });
-}
-
-function results() {
-  resultsOpen = true;
-  const { right, done } = tally();
-  $("q-card").classList.add("hidden");
-  $("q-result").classList.remove("hidden");
-  $("r-pct").textContent = done ? `${Math.round((right / done) * 100)}%` : "0%";
-  const skipped = order.length - done;
-  $("r-line").textContent = `${right} of ${order.length} correct` + (skipped ? `, ${skipped} not answered` : "");
-  const missed = order.filter((i) => resp[i]?.answered && resp[i].selected !== quiz.questions[i].correct);
-  $("r-missed").classList.toggle("hidden", !missed.length);
-  bar(); nav(); save();
-}
-
-function restart(list) {
-  for (const i of list) delete resp[i];
-  order = list; cur = 0; render();
-}
-
-$("q-submit").addEventListener("click", submit);
-$("q-next").addEventListener("click", () => go(cur + 1));
-$("q-back").addEventListener("click", () => go(cur - 1));
-$("r-review").addEventListener("click", () => go(0));
-$("r-missed").addEventListener("click", () => restart(order.filter((i) => resp[i]?.answered && resp[i].selected !== quiz.questions[i].correct)));
-$("r-again").addEventListener("click", () => restart(quiz.questions.map((_, i) => i)));
-
-$("q-share").addEventListener("click", async () => {
-  const b = $("q-share");
-  try {
-    const { share_token } = await api(`/v1/quiz/${encodeURIComponent(quizId)}/share`, { method: "POST", user });
-    const link = `${location.origin}/quiz/?id=${encodeURIComponent(quizId)}&t=${encodeURIComponent(share_token)}`;
-    await navigator.clipboard.writeText(link);
-    b.textContent = "Link Copied";
-    setTimeout(() => { b.textContent = "Copy Share Link"; }, 2000);
-  } catch (e) { err(e.message || "The link could not be copied."); }
-});
-
-// A to E (or 1 to 5) picks, enter submits then moves on, arrows move
-document.addEventListener("keydown", (e) => {
-  if (zoomed) { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") { e.preventDefault(); unzoom(); } return; }
-  if (!quiz || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === "ArrowLeft") { e.preventDefault(); if (resultsOpen) go(order.length - 1); else go(cur - 1); return; }
-  if (e.key === "ArrowRight") { e.preventDefault(); if (!resultsOpen) go(cur + 1); return; }
-  if (resultsOpen) return;
-  if (e.key === "Enter") {
-    if (document.activeElement && document.activeElement.tagName === "BUTTON" && !document.activeElement.classList.contains("q-choice")) return;
-    e.preventDefault();
-    if (r(order[cur]).answered) go(cur + 1); else submit();
-    return;
-  }
-  const letters = Object.keys(quiz.questions[order[cur]].answers);
-  const k = /^[1-5]$/.test(e.key) ? letters[Number(e.key) - 1] : e.key.toUpperCase();
-  if (letters.includes(k) && e.key.length === 1) { e.preventDefault(); pick(k); }
-});
-</script>""")
+""", script='<script type="module" src="/assets/quiz.js?v=JSVER"></script>')
 
 # ------------------------------------------------------------------ link
 page("link/index.html", "Link Anki", "Link the PDF Occlusion add-on to your account.",

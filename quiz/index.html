@@ -14,15 +14,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=eea464d5">
+<link rel="stylesheet" href="/assets/site.css?v=35535610">
 </head>
 <body>
-<main>
-<script>if (!new URLSearchParams(location.search).get("id")) location.replace("/account/");</script>
+<main class="wide">
+<script>(function () { var p = new URLSearchParams(location.search); if (!p.get("id") && !p.get("set") && !p.get("q")) location.replace("/account/"); })();</script>
 <a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; Back</a>
 <div class="top small">
   <a href="/" aria-label="PDF Occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
-  <h1>Quiz</h1>
+  <h1 id="q-title">Quiz</h1>
+  <p class="q-sub muted hidden" id="q-sub"></p>
   <nav class="links" aria-label="Main">
     <a href="/pricing/">Pricing</a>
     <a href="/account/">Account</a>
@@ -38,39 +39,89 @@
 
 <div id="q-play" class="hidden">
   <div class="q-bar">
-    <span id="q-pos"></span>
-    <span id="q-score"></span>
+    <span id="q-progress-label"></span>
+    <button class="q-tool" id="q-reset-test" title="Clear every answer in this test" disabled>Reset Test</button>
   </div>
   <div class="q-progress"><div id="q-fill"></div></div>
 
-  <div class="panel q-card" id="q-card">
-    <p class="q-stem" id="q-stem"></p>
-    <div id="q-img"></div>
-    <div id="q-table"></div>
-    <div class="q-choices" id="q-choices"></div>
-    <div class="q-exp hidden" id="q-exp"></div>
-    <div class="row q-actions">
-      <button id="q-back">Back</button>
-      <button class="primary" id="q-submit" disabled>Submit</button>
-      <button class="primary hidden" id="q-next">Next</button>
+  <div class="q-layout">
+    <aside class="q-rail" aria-label="Questions">
+      <div class="q-rail-title">Questions</div>
+      <div class="q-scope hidden" id="q-scope"><button type="button" id="q-scope-redo"></button><button type="button" id="q-scope-all"></button></div>
+      <div class="q-counts hidden" id="q-counts"></div>
+      <div class="q-grid" id="q-grid"></div>
+      <div class="q-legend">
+        <span><i class="q-sw right"></i>Correct</span>
+        <span><i class="q-sw wrong"></i>Incorrect</span>
+        <span><i class="q-sw skipped"></i>Skipped</span>
+        <span><i class="q-flag-key">&#9873;</i>Flagged</span>
+      </div>
+    </aside>
+
+    <div class="q-main">
+      <div class="panel q-card" id="q-card">
+        <div class="q-top">
+          <span class="q-meta" id="q-meta"></span>
+          <span class="q-tools">
+            <button type="button" class="q-tool q-timer" id="q-timer" aria-pressed="false">1:30</button>
+            <button type="button" class="q-tool q-id" id="q-id" title="Copy this question's ID"></button>
+          </span>
+        </div>
+        <div class="q-hist" id="q-hist"></div>
+        <p class="q-stem" id="q-stem"></p>
+        <div id="q-table"></div>
+        <div id="q-img"></div>
+        <div class="q-choices" id="q-choices"></div>
+        <div class="q-exp hidden" id="q-exp">
+          <h3>Explanations</h3>
+          <div id="q-exp-items"></div>
+        </div>
+        <div class="q-actions">
+          <span class="q-score" id="q-score"></span>
+          <span class="q-buttons">
+            <button type="button" class="q-flag" id="q-flag" aria-pressed="false">Flag</button>
+            <button type="button" id="q-reset" title="Clear your answer to this question">Reset</button>
+            <button type="button" id="q-back" title="Previous question (Left Arrow)">Back</button>
+            <button type="button" class="primary" id="q-submit" title="Submit (Enter)" disabled>Submit</button>
+            <button type="button" id="q-next">Skip</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="panel q-result hidden" id="q-result">
+        <h2>Quiz Complete</h2>
+        <div class="q-donut">
+          <svg width="148" height="148" viewBox="0 0 148 148" aria-hidden="true">
+            <circle cx="74" cy="74" r="60" fill="none" class="q-donut-track" stroke-width="14"/>
+            <circle cx="74" cy="74" r="60" fill="none" class="q-donut-arc" stroke-width="14" stroke-dasharray="376.99" stroke-dashoffset="376.99" stroke-linecap="round" id="r-arc"/>
+          </svg>
+          <div class="q-donut-label"><div class="q-donut-pct" id="r-pct">0%</div><div class="muted small">Score</div></div>
+        </div>
+        <div class="q-stats">
+          <div><div class="v right" id="r-correct">0</div><div class="l">Correct</div></div>
+          <div><div class="v wrong" id="r-wrong">0</div><div class="l">Incorrect</div></div>
+          <div><div class="v" id="r-skipped">0</div><div class="l">Skipped</div></div>
+          <div><div class="v" id="r-flagged">0</div><div class="l">Flagged</div></div>
+          <div><div class="v" id="r-total">0</div><div class="l">Answered</div></div>
+        </div>
+        <div class="row center">
+          <button type="button" id="r-review">Review Answers</button>
+          <button type="button" class="hidden" id="r-flagged-btn">Review Flagged</button>
+          <button type="button" class="hidden" id="r-skipped-btn">Review Skipped</button>
+          <button type="button" class="hidden" id="r-redo">Redo Missed</button>
+          <button type="button" class="primary" id="r-again">Start Over</button>
+        </div>
+      </div>
+
+      <div class="row center" style="margin-top:22px">
+        <button class="hidden" id="q-share">Copy Share Link</button>
+      </div>
     </div>
   </div>
-
-  <div class="panel q-result hidden" id="q-result">
-    <div class="left" id="r-pct"></div>
-    <div class="muted" id="r-line"></div>
-    <div class="row center">
-      <button id="r-review">Review</button>
-      <button id="r-missed">Retry Missed</button>
-      <button id="r-again">Start Over</button>
-    </div>
-  </div>
-
-  <ol class="q-nav" id="q-nav" aria-label="Questions"></ol>
-
-  <div class="row center" style="margin-top:22px">
-    <button class="hidden" id="q-share">Copy Share Link</button>
-  </div>
+</div>
+<div class="hl-pop" id="hl-pop" role="toolbar" aria-label="Highlight">
+  <button type="button" id="hl-add"><i class="dot"></i>Highlight</button>
+  <button type="button" id="hl-del">Remove</button>
 </div>
 <p class="error hidden center" id="q-error" role="alert"></p>
 </main>
@@ -81,290 +132,7 @@
     <a href="mailto:pdf-occlusion-support@googlegroups.com">Help</a>
   </nav>
 </footer>
-<script type="module">
-import { watchUser, signIn, api, quizImage } from "/assets/app.js";
-const $ = (id) => document.getElementById(id);
-const params = new URLSearchParams(location.search);
-const quizId = params.get("id");
-const token = params.get("t");
-const show = (id) => { for (const k of ["q-loading", "q-out", "q-play"]) $(k).classList.toggle("hidden", k !== id); };
-const err = (m) => { $("q-error").textContent = m; $("q-error").classList.remove("hidden"); };
-let user = null;
-let started = false;
-
-$("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
-
-watchUser((u) => {
-  user = u;
-  if (quizId && !started) { started = true; openQuiz(); }
-});
-
-// ------------------------------------------------ playing
-let quiz = null, order = [], cur = 0, resp = {}, resultsOpen = false;
-const key = () => `po-quiz-${quizId}`;
-const save = () => { try { localStorage.setItem(key(), JSON.stringify({ resp, order, cur })); } catch {} };
-const restore = () => { try { return JSON.parse(localStorage.getItem(key()) || "null"); } catch { return null; } };
-const r = (i) => (resp[i] = resp[i] || { selected: null, answered: false, struck: [] });
-
-// ------------------------------------------------ slide images
-// {page, box: [x, y, w, h] as fractions of the slide, caption, credit}: only
-// the box shows, at its own shape. Each slide is fetched once, when first shown.
-const slides = new Map();
-const slide = (im) => {
-  const k = im.src || im.page;
-  if (!slides.has(k)) slides.set(k, quizImage(quizId, im, { token, user }).catch((e) => { slides.delete(k); throw e; }));
-  return slides.get(k);
-};
-addEventListener("pagehide", () => { for (const p of slides.values()) p.then(URL.revokeObjectURL, () => {}); slides.clear(); });
-const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, Number(v) || 0));
-function figure(im, big = false) {
-  const b = Array.isArray(im.box) && im.box.length === 4 ? im.box : [0, 0, 1, 1];
-  const x = clamp(b[0], 0, 0.99), y = clamp(b[1], 0, 0.99);
-  const w = Number(b[2]) > 0 ? clamp(b[2], 0.01, 1 - x) : 1 - x, h = Number(b[3]) > 0 ? clamp(b[3], 0.01, 1 - y) : 1 - y;
-  const fig = document.createElement("figure");
-  fig.className = "q-fig";
-  const crop = document.createElement("div");
-  crop.className = "q-crop";
-  const img = document.createElement("img");
-  img.alt = im.caption || "Slide";
-  Object.assign(img.style, { width: `${100 / w}%`, height: `${100 / h}%`, left: `${(-x / w) * 100}%`, top: `${(-y / h) * 100}%` });
-  // the box's shape on a 16:9 slide until the real one is known
-  const size = (W, H) => {
-    const ratio = (w * W) / (h * H);
-    crop.style.aspectRatio = String(ratio);
-    crop.style.width = big ? `min(100%, ${ratio * 78}vh)` : `min(100%, ${ratio * 46}vh)`;
-  };
-  size(16, 9);
-  img.addEventListener("load", () => { size(img.naturalWidth, img.naturalHeight); crop.classList.add("ready"); });
-  slide(im).then((src) => { img.src = src; }).catch(() => fig.remove());
-  crop.append(img);
-  fig.append(crop);
-  if (!big) {
-    crop.tabIndex = 0;
-    crop.setAttribute("role", "button");
-    crop.setAttribute("aria-label", "view larger");
-    crop.addEventListener("click", () => zoom(im));
-    crop.addEventListener("keydown", (e) => { if (!zoomed && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); e.stopPropagation(); zoom(im); } });
-  }
-  if (im.caption || im.credit) {
-    const cap = document.createElement("figcaption");
-    if (im.caption) { const c = document.createElement("span"); c.textContent = im.caption; cap.append(c); }
-    if (im.credit) { const c = document.createElement("span"); c.className = "q-credit"; c.textContent = im.credit; cap.append(c); }
-    fig.append(cap);
-  }
-  return fig;
-}
-let zoomed = null;
-function zoom(im) {
-  zoomed = document.createElement("div");
-  zoomed.className = "q-zoom";
-  zoomed.append(figure(im, true));
-  zoomed.addEventListener("click", unzoom);
-  document.body.append(zoomed);
-}
-function unzoom() { zoomed?.remove(); zoomed = null; }
-
-async function openQuiz() {
-  try {
-    quiz = await api(`/v1/quiz/${encodeURIComponent(quizId)}${token ? `?t=${encodeURIComponent(token)}` : ""}`, { user });
-  } catch (e) {
-    // someone else's link without its token, or the owner signed out: sign in, then try again
-    if (e.status === 404 && !user && !token) { started = false; show("q-out"); return; }
-    show("");
-    err(e.status === 404 ? "This quiz does not exist, or its link has changed." : e.message);
-    return;
-  }
-  document.title = quiz.lecture || "Quiz";
-  document.querySelector(".top h1").textContent = quiz.lecture || "Quiz";
-  const n = quiz.questions.length;
-  const saved = restore();
-  if (saved && Array.isArray(saved.order) && saved.order.length && saved.order.every((i) => i < n)) {
-    resp = saved.resp || {}; order = saved.order; cur = Math.min(saved.cur || 0, order.length - 1);
-  } else {
-    order = quiz.questions.map((_, i) => i);
-  }
-  $("q-share").classList.toggle("hidden", !quiz.owner);
-  show("q-play");
-  render();
-}
-
-function tally() {
-  let right = 0, done = 0;
-  for (const i of order) { const x = resp[i]; if (x && x.answered) { done++; if (x.selected === quiz.questions[i].correct) right++; } }
-  return { right, done };
-}
-
-function bar() {
-  const { right, done } = tally();
-  $("q-pos").textContent = resultsOpen ? "Done" : `${cur + 1} of ${order.length}`;
-  $("q-score").textContent = done ? `${right} of ${done} correct` : "";
-  $("q-fill").style.width = `${(done / order.length) * 100}%`;
-}
-
-function table(rows) {
-  const t = document.createElement("table");
-  t.className = "q-tbl";
-  rows.forEach((row, ri) => {
-    const tr = document.createElement("tr");
-    for (const c of row) { const cell = document.createElement(ri === 0 ? "th" : "td"); cell.textContent = c; tr.append(cell); }
-    t.append(tr);
-  });
-  const wrap = document.createElement("div");
-  wrap.className = "q-tbl-wrap";
-  wrap.append(t);
-  return wrap;
-}
-
-function render() {
-  resultsOpen = false;
-  $("q-result").classList.add("hidden");
-  $("q-card").classList.remove("hidden");
-  const i = order[cur], q = quiz.questions[i], x = r(i);
-  $("q-stem").textContent = q.question;
-  $("q-img").replaceChildren(...(q.image ? [figure(q.image)] : []));
-  $("q-table").replaceChildren(...(q.table ? [table(q.table)] : []));
-  const box = $("q-choices"); box.replaceChildren();
-  for (const L of Object.keys(q.answers)) {
-    const b = document.createElement("button");
-    b.className = "q-choice";
-    b.dataset.letter = L;
-    const tag = document.createElement("span"); tag.className = "q-letter"; tag.textContent = L;
-    const txt = document.createElement("span"); txt.textContent = q.answers[L];
-    b.append(tag, txt);
-    b.addEventListener("click", () => pick(L));
-    b.addEventListener("contextmenu", (e) => {
-      e.preventDefault();
-      if (x.answered) return;
-      x.struck = x.struck.includes(L) ? x.struck.filter((s) => s !== L) : [...x.struck, L];
-      paint(); save();
-    });
-    box.append(b);
-  }
-  paint();
-  bar(); nav(); save();
-}
-
-function paint() {
-  const i = order[cur], q = quiz.questions[i], x = r(i);
-  for (const b of document.querySelectorAll(".q-choice")) {
-    const L = b.dataset.letter;
-    b.classList.toggle("selected", !x.answered && x.selected === L);
-    b.classList.toggle("struck", !x.answered && x.struck.includes(L));
-    b.classList.toggle("right", x.answered && L === q.correct);
-    b.classList.toggle("wrong", x.answered && L === x.selected && L !== q.correct);
-    b.disabled = x.answered;
-  }
-  const exp = $("q-exp");
-  exp.replaceChildren();
-  if (x.answered) {
-    for (const L of Object.keys(q.answers)) {
-      const p = document.createElement("p");
-      p.className = L === q.correct ? "right" : "";
-      const tag = document.createElement("b"); tag.textContent = `${L}. `;
-      p.append(tag, document.createTextNode(q.explanations?.[L] || ""));
-      exp.append(p);
-    }
-    if (q.explanationImage) exp.append(figure(q.explanationImage));
-    if (q.page) { const p = document.createElement("p"); p.className = "muted small"; p.textContent = `Slide ${q.page}`; exp.append(p); }
-  }
-  exp.classList.toggle("hidden", !x.answered);
-  $("q-submit").classList.toggle("hidden", x.answered);
-  $("q-submit").disabled = !x.selected;
-  $("q-next").classList.toggle("hidden", !x.answered);
-  $("q-next").textContent = cur === order.length - 1 ? "See Score" : "Next";
-  $("q-back").disabled = cur === 0;
-}
-
-function pick(L) {
-  const x = r(order[cur]);
-  if (x.answered) return;
-  x.selected = L; x.struck = x.struck.filter((s) => s !== L);
-  paint(); save();
-}
-
-function submit() {
-  const x = r(order[cur]);
-  if (!x.selected || x.answered) return;
-  x.answered = true;
-  paint(); bar(); nav(); save();
-}
-
-function go(n) {
-  if (n < 0) return;
-  if (n >= order.length) { results(); return; }
-  cur = n; render();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function nav() {
-  const ol = $("q-nav"); ol.replaceChildren();
-  order.forEach((i, n) => {
-    const li = document.createElement("li");
-    const b = document.createElement("button");
-    b.textContent = n + 1;
-    b.setAttribute("aria-label", `question ${n + 1}`);
-    const x = resp[i];
-    if (x && x.answered) b.className = x.selected === quiz.questions[i].correct ? "right" : "wrong";
-    if (n === cur && !resultsOpen) b.setAttribute("aria-current", "true");
-    b.addEventListener("click", () => go(n));
-    li.append(b); ol.append(li);
-  });
-}
-
-function results() {
-  resultsOpen = true;
-  const { right, done } = tally();
-  $("q-card").classList.add("hidden");
-  $("q-result").classList.remove("hidden");
-  $("r-pct").textContent = done ? `${Math.round((right / done) * 100)}%` : "0%";
-  const skipped = order.length - done;
-  $("r-line").textContent = `${right} of ${order.length} correct` + (skipped ? `, ${skipped} not answered` : "");
-  const missed = order.filter((i) => resp[i]?.answered && resp[i].selected !== quiz.questions[i].correct);
-  $("r-missed").classList.toggle("hidden", !missed.length);
-  bar(); nav(); save();
-}
-
-function restart(list) {
-  for (const i of list) delete resp[i];
-  order = list; cur = 0; render();
-}
-
-$("q-submit").addEventListener("click", submit);
-$("q-next").addEventListener("click", () => go(cur + 1));
-$("q-back").addEventListener("click", () => go(cur - 1));
-$("r-review").addEventListener("click", () => go(0));
-$("r-missed").addEventListener("click", () => restart(order.filter((i) => resp[i]?.answered && resp[i].selected !== quiz.questions[i].correct)));
-$("r-again").addEventListener("click", () => restart(quiz.questions.map((_, i) => i)));
-
-$("q-share").addEventListener("click", async () => {
-  const b = $("q-share");
-  try {
-    const { share_token } = await api(`/v1/quiz/${encodeURIComponent(quizId)}/share`, { method: "POST", user });
-    const link = `${location.origin}/quiz/?id=${encodeURIComponent(quizId)}&t=${encodeURIComponent(share_token)}`;
-    await navigator.clipboard.writeText(link);
-    b.textContent = "Link Copied";
-    setTimeout(() => { b.textContent = "Copy Share Link"; }, 2000);
-  } catch (e) { err(e.message || "The link could not be copied."); }
-});
-
-// A to E (or 1 to 5) picks, enter submits then moves on, arrows move
-document.addEventListener("keydown", (e) => {
-  if (zoomed) { if (e.key === "Escape" || e.key === "Enter" || e.key === " ") { e.preventDefault(); unzoom(); } return; }
-  if (!quiz || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === "ArrowLeft") { e.preventDefault(); if (resultsOpen) go(order.length - 1); else go(cur - 1); return; }
-  if (e.key === "ArrowRight") { e.preventDefault(); if (!resultsOpen) go(cur + 1); return; }
-  if (resultsOpen) return;
-  if (e.key === "Enter") {
-    if (document.activeElement && document.activeElement.tagName === "BUTTON" && !document.activeElement.classList.contains("q-choice")) return;
-    e.preventDefault();
-    if (r(order[cur]).answered) go(cur + 1); else submit();
-    return;
-  }
-  const letters = Object.keys(quiz.questions[order[cur]].answers);
-  const k = /^[1-5]$/.test(e.key) ? letters[Number(e.key) - 1] : e.key.toUpperCase();
-  if (letters.includes(k) && e.key.length === 1) { e.preventDefault(); pick(k); }
-});
-</script>
+<script type="module" src="/assets/quiz.js?v=8f82b3b5"></script>
 <script>
 (function () {
   try {
