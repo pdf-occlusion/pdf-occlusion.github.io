@@ -494,6 +494,25 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 .qh .h-seg button.on, .qh .h-seg button.on:hover { background: var(--accent); color: var(--h-card); }
 .qh .h-seg button:disabled { background: transparent; color: #b5b5b5; cursor: default; }
 .qh .h-error { font-size: 0.8rem; color: var(--red); text-align: center; }
+/* naming a group: new, renamed, or the one ticked quizzes move to */
+.qh .h-name-form { display: flex; align-items: center; gap: 0.4rem; flex: 1 1 auto; min-width: 0; }
+#h-new-form { margin-top: 0.55rem; }
+.qh .h-group-head .h-name-form { padding: 0.15rem 0; }
+.qh .h-name-form input {
+  flex: 1 1 auto; min-width: 0; height: 28px; padding: 0 0.6rem; border: 1px solid var(--h-line); border-radius: 6px;
+  background: var(--h-field); color: var(--ink); font: inherit; font-size: 0.82rem; outline: none;
+}
+.qh .h-name-form input:focus { border-color: var(--accent); }
+.qh .h-name-form input::placeholder { color: var(--accent); opacity: 0.5; }
+.qh .h-pickbar .h-name-form { flex: 0 1 auto; }
+.qh .h-pickbar .h-name-form input { width: 11rem; height: 30px; }
+.qh .h-select {
+  height: 30px; padding: 0 1.6rem 0 0.6rem; border: 1px solid var(--h-line); border-radius: 6px; font: inherit; font-size: 0.78rem;
+  color: var(--accent); cursor: pointer; appearance: none; -webkit-appearance: none;
+  background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235c4f7a' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 0.55rem center;
+}
+.qh .h-select:hover { border-color: var(--accent); }
+.qh .h-tick:disabled { opacity: 0.3; cursor: default; }
 @media (max-width: 560px) {
   .qh .h-top { flex-wrap: wrap; row-gap: 0.55rem; padding: 0.6rem 1rem; }
   .qh .h-top-right { width: 100%; gap: 0.5rem; }
@@ -508,3 +527,52 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 @media (max-width: 360px) {
   .q-buttons button { padding: 6px 8px; font-size: 0.85rem; }
 }
+
+/* pricing: three plans side by side */
+main.wide .narrow { max-width: 640px; margin: 0 auto; }
+.plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; max-width: 980px; margin: 34px auto 0; align-items: stretch; }
+.plans .panel + .panel { margin-top: 0; }
+.plan { display: flex; flex-direction: column; padding: 22px 22px 20px; }
+.plan h2 { margin: 0; font-size: 1.1rem; }
+.plan-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 28px; }
+.plan > h2 { min-height: 28px; display: flex; align-items: center; }
+.plan .price { display: flex; align-items: baseline; gap: 8px; margin-top: 16px; }
+.plan .amount { font-size: 2.2rem; font-weight: 600; color: var(--ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.plan .per { color: var(--muted); font-size: 0.92rem; }
+.plan .bill { color: var(--muted); font-size: 0.88rem; margin-top: 2px; min-height: 1.4em; }
+.plan .credits { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-weight: 600; color: var(--accent); }
+.plan .gets { font-size: 0.92rem; margin-top: 2px; }
+.plan > .btn, .plan > button { margin-top: auto; justify-content: center; }
+.plan .gets { margin-bottom: 20px; }
+.main-plan { border-color: rgba(92, 79, 122, 0.45); }
+
+.seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.seg button { border: none; border-radius: 0; background: transparent; font-size: 0.8rem; padding: 3px 10px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.on, .seg button.on:hover:not(:disabled) { background: var(--accent); color: #fff; }
+
+.cost-list li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); }
+.cost-list li:first-child { border-top: none; padding-top: 0; }
+.cost-list li:last-child { padding-bottom: 0; }
+.cost-list li span:last-child { color: var(--accent); white-space: nowrap; }
+ul.dots.details { color: var(--muted); font-size: 0.94rem; }
+
+@media (max-width: 760px) {
+  .plans { grid-template-columns: 1fr; max-width: 420px; }
+}
+
+/* account, laid out like the quiz home */
+.qh .a-stack { display: flex; flex-direction: column; gap: 0.65rem; }
+.qh .a-stack.hidden { display: none; }
+.qh .a-credits { gap: 0.6rem; }
+.qh .a-left { padding: 0.1rem 0.5rem 0; color: var(--accent); }
+.qh .a-left #left { font-size: 2rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.qh .a-left-note { font-size: 0.85rem; opacity: 0.75; }
+.qh .a-kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1.2rem; padding: 0 0.5rem 0.2rem; font-size: 0.82rem; }
+.qh .a-kv dt { color: var(--accent); opacity: 0.7; }
+.qh .a-kv dd { color: var(--ink); }
+.qh .h-note { font-size: 0.85rem; color: var(--accent); text-align: center; }
+.qh .a-end { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
+.qh .h-btn.danger { background: var(--red); }
+.qh .h-btn.danger:hover:not(:disabled) { background: #9c3a4e; }
+.qh a.h-btn:hover { text-decoration: none; }

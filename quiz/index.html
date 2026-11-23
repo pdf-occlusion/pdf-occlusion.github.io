@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=29bbfd12">
+<link rel="stylesheet" href="/assets/site.css?v=40c60a3b">
 </head>
 <body>
 <main class="wide">
@@ -30,7 +30,6 @@
     <span class="h-who" id="h-who"></span>
     <span class="h-rule"></span>
     <button class="h-link" id="h-history-btn" type="button" aria-expanded="false">History</button>
-    <a class="h-link" href="/pricing/">Pricing</a>
     <a class="h-link" href="/account/">Account</a>
   </div>
 </div>
@@ -44,13 +43,17 @@
     </div>
     <div class="h-card hidden" id="h-mine">
       <div class="h-row">
-        <div class="h-left">
-          <div class="h-name">Your Quizzes</div>
-          <div class="h-count" id="h-mine-count"></div>
-          <div class="h-count" id="h-mine-stat"></div>
+        <div class="h-left"><div class="h-name">Your Quizzes</div></div>
+        <div class="h-actions">
+          <button class="h-btn outline" id="h-new-group" type="button">New Group</button>
+          <button class="h-btn" id="h-shuffle-all" type="button">Shuffle All</button>
         </div>
-        <div class="h-actions"><button class="h-btn" id="h-shuffle-all" type="button">Shuffle All</button></div>
       </div>
+      <form class="h-name-form hidden" id="h-new-form">
+        <input id="h-new-name" type="text" placeholder="Group name" aria-label="Group name" maxlength="60" autocomplete="off">
+        <button class="h-btn" type="submit" id="h-new-go" disabled>Create</button>
+        <button class="h-btn outline" type="button" id="h-new-cancel">Cancel</button>
+      </form>
       <div class="h-list" id="h-mine-list"></div>
     </div>
     <div class="h-card hidden" id="h-shared">
@@ -80,6 +83,11 @@
     <button type="button" data-only="flagged"></button>
   </div>
   <button class="h-btn" type="button" id="h-pick-go">Start</button>
+  <select class="h-select" id="h-pick-move" aria-label="Move to group"></select>
+  <form class="h-name-form hidden" id="h-move-form">
+    <input id="h-move-name" type="text" placeholder="Group name" aria-label="New group name" maxlength="60" autocomplete="off">
+    <button class="h-btn" type="submit" id="h-move-go" disabled>Move</button>
+  </form>
   <button class="h-btn outline" type="button" id="h-pick-clear">Clear</button>
 </div>
 </div>
@@ -201,7 +209,7 @@
 </footer>
 <script type="module">
 const p = new URLSearchParams(location.search);
-if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=f056d771"); else import("/assets/home.js?v=076d80e9");
+if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=f056d771"); else import("/assets/home.js?v=99a78ce3");
 </script>
 <script>
 (function () {

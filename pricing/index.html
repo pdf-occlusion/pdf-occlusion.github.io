@@ -15,10 +15,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=29bbfd12">
+<link rel="stylesheet" href="/assets/site.css?v=40c60a3b">
 </head>
 <body>
-<main>
+<main class="wide">
 <a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; Back</a>
 <div class="top small">
   <a href="/" aria-label="PDF Occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
@@ -30,44 +30,67 @@
   </nav>
 </div>
 
-<p class="lede">Generate uses credits. The add-on itself is free.</p>
+<p class="lede">The add-on is free. Generate, which makes the boxes, cards and quizzes for you, uses credits.</p>
 
-<div class="panel outputs costs" style="margin-top:30px">
-  <div><div class="name">Boxes</div><div class="what">1 credit per slide</div></div>
-  <div><div class="name">Cards</div><div class="what">1 credit per slide</div></div>
-  <div><div class="name">Quiz</div><div class="what">2 credits per question</div></div>
-</div>
+<div class="plans">
+  <div class="panel plan">
+    <h2>Free</h2>
+    <div class="price"><span class="amount">$0</span></div>
+    <div class="bill">For every new account</div>
+    <div class="credits">60 credits</div>
+    <div class="gets">60 slides, or 30 quiz questions</div>
+    <a class="btn" href="/account/">Sign In</a>
+  </div>
 
-<div class="panel">
-  <ul class="plain price-list">
-    <li>
-      <div><div class="name">Starter</div><div class="what">60 credits for new accounts</div></div>
-      <div class="amount">Free</div>
-    </li>
-    <li>
-      <div><div class="name">Monthly</div><div class="what">1,200 credits per month</div></div>
-      <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">Subscribe</button></div>
-    </li>
-    <li>
-      <div><div class="name">Yearly</div><div class="what">1,200 credits per month, billed annually</div></div>
-      <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">Subscribe</button></div>
-    </li>
-    <li>
-      <div><div class="name">400 Credits</div><div class="what">Credits do not expire</div></div>
-      <div class="row" style="margin:0"><span class="amount">$9.99</span><button data-buy="pack">Buy</button></div>
-    </li>
-  </ul>
+  <div class="panel plan main-plan">
+    <div class="plan-head">
+      <h2>Subscription</h2>
+      <div class="seg" role="group" aria-label="Billing">
+        <button type="button" class="on" data-term="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" data-term="yearly" aria-pressed="false">Yearly</button>
+      </div>
+    </div>
+    <div class="price"><span class="amount" id="sub-amount">$14.99</span><span class="per">per month</span></div>
+    <div class="bill" id="sub-bill">Billed monthly</div>
+    <div class="credits">1,200 credits every month</div>
+    <div class="gets">1,200 slides, or 600 quiz questions</div>
+    <button class="primary" data-buy="monthly" id="sub-buy">Subscribe</button>
+  </div>
+
+  <div class="panel plan">
+    <h2>Credit Pack</h2>
+    <div class="price"><span class="amount">$9.99</span><span class="per">one time</span></div>
+    <div class="bill">Credits never expire</div>
+    <div class="credits">400 credits</div>
+    <div class="gets">400 slides, or 200 quiz questions</div>
+    <button data-buy="pack">Buy Credits</button>
+  </div>
 </div>
 <p class="error hidden center" id="buy-error" role="alert"></p>
 
+<div class="narrow">
 <section>
-  <ul class="dots">
-    <li>Plan credits renew each month. Purchased credits are used after plan credits run out.</li>
+  <h2>What Uses Credits</h2>
+  <div class="panel">
+    <ul class="plain cost-list">
+      <li><span>Boxes for one slide</span><span>1 credit</span></li>
+      <li><span>Text cards for one slide</span><span>1 credit</span></li>
+      <li><span>One quiz question</span><span>2 credits</span></li>
+      <li><span>Placing boxes by hand</span><span>Free</span></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Details</h2>
+  <ul class="dots details">
+    <li>Subscription credits renew each month. Credit Pack credits are used after those run out.</li>
     <li>Cancel anytime from your account. Your plan stays active until the end of the billing period.</li>
-    <li>Slides are charged as they are completed, so stopping a run early only uses what was finished. A quiz has up to 40 questions and is charged once it is ready.</li>
-    <li>Placing boxes by hand is always free.</li>
+    <li>Slides are charged as they finish, so stopping a run early only uses what was done.</li>
+    <li>A quiz has up to 40 questions and is charged once it is ready.</li>
   </ul>
 </section>
+</div>
 </main>
 <footer>
   <nav aria-label="Footer">
@@ -81,6 +104,21 @@ import { watchUser, signIn, api } from "/assets/app.js";
 let user = null;
 watchUser((u) => { user = u; });
 const err = document.getElementById("buy-error");
+const terms = {
+  monthly: { amount: "$14.99", bill: "Billed monthly" },
+  yearly: { amount: "$12.49", bill: "$149.90 billed yearly, 2 months free" },
+};
+for (const t of document.querySelectorAll("[data-term]")) {
+  t.addEventListener("click", () => {
+    for (const o of document.querySelectorAll("[data-term]")) {
+      o.classList.toggle("on", o === t);
+      o.setAttribute("aria-pressed", o === t ? "true" : "false");
+    }
+    document.getElementById("sub-amount").textContent = terms[t.dataset.term].amount;
+    document.getElementById("sub-bill").textContent = terms[t.dataset.term].bill;
+    document.getElementById("sub-buy").dataset.buy = t.dataset.term;
+  });
+}
 for (const b of document.querySelectorAll("[data-buy]")) {
   b.addEventListener("click", async () => {
     err.classList.add("hidden");

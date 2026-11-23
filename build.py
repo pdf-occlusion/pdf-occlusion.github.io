@@ -94,15 +94,17 @@ def version(name):
     return hashlib.sha1(open(os.path.join(HERE, "assets", name), "rb").read()).hexdigest()[:8]
 
 
-def page(path, title, desc, body, script="", wide=False, index=True):
+def page(path, title, desc, body, script="", wide=False, index=True, app=False):
     body = body.replace("{G_ICON}", G_ICON)
     url = SITE + "/" + path.removesuffix("index.html")
     if index:
         SITEMAP.append(url)
     robots = "" if index else '\n<meta name="robots" content="noindex">'
     head = HEAD.format(title=title, desc=desc, url=url, robots=robots).replace("CSSVER", version("site.css"))
-    if wide:
+    if wide or app:
         head = head.replace("<main>", '<main class="wide">')
+    if app:
+        head = head.replace('<html lang="en">', '<html lang="en" class="is-home">').replace("<body>", '<body class="qh">')
     script = script.replace("JSVER", version("quiz.js")).replace("HOMEVER", version("home.js"))
     html = head + body + FOOT.format(script=(script + "\n" + BEACON).strip())
     out = os.path.join(HERE, path)
@@ -183,52 +185,90 @@ page("index.html", "PDF Occlusion for Anki",
 """)
 
 # ------------------------------------------------------------------ pricing
-page("pricing/index.html", "Pricing",
+page("pricing/index.html", "Pricing", wide=True, desc=
      "Start with 60 free credits. Monthly is $14.99 and Yearly is $149.90, each with 1,200 credits per month, or buy 400 credits for $9.99. Boxes and cards use 1 credit per slide; quizzes use 2 credits per question.",
      body=top("Pricing", "pricing") + f"""
-<p class="lede">Generate uses credits. The add-on itself is free.</p>
+<p class="lede">The add-on is free. Generate, which makes the boxes, cards and quizzes for you, uses credits.</p>
 
-<div class="panel outputs costs" style="margin-top:30px">
-  <div><div class="name">Boxes</div><div class="what">1 credit per slide</div></div>
-  <div><div class="name">Cards</div><div class="what">1 credit per slide</div></div>
-  <div><div class="name">Quiz</div><div class="what">2 credits per question</div></div>
-</div>
+<div class="plans">
+  <div class="panel plan">
+    <h2>Free</h2>
+    <div class="price"><span class="amount">$0</span></div>
+    <div class="bill">For every new account</div>
+    <div class="credits">60 credits</div>
+    <div class="gets">60 slides, or 30 quiz questions</div>
+    <a class="btn" href="/account/">Sign In</a>
+  </div>
 
-<div class="panel">
-  <ul class="plain price-list">
-    <li>
-      <div><div class="name">Starter</div><div class="what">60 credits for new accounts</div></div>
-      <div class="amount">Free</div>
-    </li>
-    <li>
-      <div><div class="name">Monthly</div><div class="what">1,200 credits per month</div></div>
-      <div class="row" style="margin:0"><span class="amount">$14.99</span><button class="primary" data-buy="monthly">Subscribe</button></div>
-    </li>
-    <li>
-      <div><div class="name">Yearly</div><div class="what">1,200 credits per month, billed annually</div></div>
-      <div class="row" style="margin:0"><span class="amount">$149.90</span><button data-buy="yearly">Subscribe</button></div>
-    </li>
-    <li>
-      <div><div class="name">400 Credits</div><div class="what">Credits do not expire</div></div>
-      <div class="row" style="margin:0"><span class="amount">$9.99</span><button data-buy="pack">Buy</button></div>
-    </li>
-  </ul>
+  <div class="panel plan main-plan">
+    <div class="plan-head">
+      <h2>Subscription</h2>
+      <div class="seg" role="group" aria-label="Billing">
+        <button type="button" class="on" data-term="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" data-term="yearly" aria-pressed="false">Yearly</button>
+      </div>
+    </div>
+    <div class="price"><span class="amount" id="sub-amount">$14.99</span><span class="per">per month</span></div>
+    <div class="bill" id="sub-bill">Billed monthly</div>
+    <div class="credits">1,200 credits every month</div>
+    <div class="gets">1,200 slides, or 600 quiz questions</div>
+    <button class="primary" data-buy="monthly" id="sub-buy">Subscribe</button>
+  </div>
+
+  <div class="panel plan">
+    <h2>Credit Pack</h2>
+    <div class="price"><span class="amount">$9.99</span><span class="per">one time</span></div>
+    <div class="bill">Credits never expire</div>
+    <div class="credits">400 credits</div>
+    <div class="gets">400 slides, or 200 quiz questions</div>
+    <button data-buy="pack">Buy Credits</button>
+  </div>
 </div>
 <p class="error hidden center" id="buy-error" role="alert"></p>
 
+<div class="narrow">
 <section>
-  <ul class="dots">
-    <li>Plan credits renew each month. Purchased credits are used after plan credits run out.</li>
+  <h2>What Uses Credits</h2>
+  <div class="panel">
+    <ul class="plain cost-list">
+      <li><span>Boxes for one slide</span><span>1 credit</span></li>
+      <li><span>Text cards for one slide</span><span>1 credit</span></li>
+      <li><span>One quiz question</span><span>2 credits</span></li>
+      <li><span>Placing boxes by hand</span><span>Free</span></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2>Details</h2>
+  <ul class="dots details">
+    <li>Subscription credits renew each month. Credit Pack credits are used after those run out.</li>
     <li>Cancel anytime from your account. Your plan stays active until the end of the billing period.</li>
-    <li>Slides are charged as they are completed, so stopping a run early only uses what was finished. A quiz has up to 40 questions and is charged once it is ready.</li>
-    <li>Placing boxes by hand is always free.</li>
+    <li>Slides are charged as they finish, so stopping a run early only uses what was done.</li>
+    <li>A quiz has up to 40 questions and is charged once it is ready.</li>
   </ul>
 </section>
+</div>
 """, script="""<script type="module">
 import { watchUser, signIn, api } from "/assets/app.js";
 let user = null;
 watchUser((u) => { user = u; });
 const err = document.getElementById("buy-error");
+const terms = {
+  monthly: { amount: "$14.99", bill: "Billed monthly" },
+  yearly: { amount: "$12.49", bill: "$149.90 billed yearly, 2 months free" },
+};
+for (const t of document.querySelectorAll("[data-term]")) {
+  t.addEventListener("click", () => {
+    for (const o of document.querySelectorAll("[data-term]")) {
+      o.classList.toggle("on", o === t);
+      o.setAttribute("aria-pressed", o === t ? "true" : "false");
+    }
+    document.getElementById("sub-amount").textContent = terms[t.dataset.term].amount;
+    document.getElementById("sub-bill").textContent = terms[t.dataset.term].bill;
+    document.getElementById("sub-buy").dataset.buy = t.dataset.term;
+  });
+}
 for (const b of document.querySelectorAll("[data-buy]")) {
   b.addEventListener("click", async () => {
     err.classList.add("hidden");
@@ -250,59 +290,77 @@ for (const b of document.querySelectorAll("[data-buy]")) {
 # ------------------------------------------------------------------ account
 # Account matters: credits, plan, billing, installs, history, sign out and
 # delete. Quizzes have their own home at /quiz/.
-page("account/index.html", "Account", "Your credits, plan and linked Anki installs.", index=False,
-     body=top("Account", "account") + f"""
-<div id="signed-out" class="hidden">
-  <p class="lede">Sign in to see your credits and plan.</p>
-  <div class="row center" style="margin-top:22px"><button id="sign-in">{{G_ICON}}Sign In with Google</button></div>
+page("account/index.html", "Account", "Your credits, plan and linked Anki installs.", index=False, app=True,
+     body=f"""<div class="qh-wrap">
+<div class="h-top">
+  <div class="h-top-left">
+    <a class="h-back" href="/">&larr; PDF Occlusion</a>
+    <div class="h-title">Account</div>
+  </div>
+  <div class="h-top-right">
+    <span class="h-who" id="who"></span>
+    <span class="h-rule"></span>
+    <a class="h-link" href="/quiz/">Quizzes</a>
+  </div>
 </div>
-
-<div id="signed-in" class="hidden">
-  <p class="lede" id="who"></p>
-  <p class="note center hidden" id="paid"></p>
-
-  <div class="panel" style="margin-top:26px">
-    <div class="left" id="left">0</div>
-    <div class="muted" id="left-note">Credits remaining</div>
-    <dl class="kv">
-      <dt>Plan</dt><dd id="plan">None</dd>
-      <dt class="hidden" id="month-k">This month</dt><dd class="hidden" id="month"></dd>
-      <dt class="hidden" id="free-k">Free credits</dt><dd class="hidden" id="free"></dd>
-      <dt class="hidden" id="packs-k">Purchased credits</dt><dd class="hidden" id="packs"></dd>
-    </dl>
-    <div class="row">
-      <a class="btn primary" href="/pricing/" id="upgrade">View Plans</a>
-      <button id="pack">Buy 400 Credits</button>
-      <button class="hidden" id="billing">Manage Billing</button>
+<div class="h-content">
+  <div class="h-desk">
+    <div class="h-card hidden" id="signed-out">
+      <div class="h-row">
+        <div class="h-left"><div class="h-name">Sign In to See Your Credits and Plan</div></div>
+        <div class="h-actions"><button class="h-btn" id="sign-in" type="button">{{G_ICON}}Sign In with Google</button></div>
+      </div>
     </div>
-  </div>
 
-  <div class="panel quizzes-link">
-    <h3>Quizzes</h3>
-    <div class="row"><a class="btn primary" href="/quiz/">Open Quizzes</a></div>
-  </div>
+    <div class="hidden a-stack" id="signed-in">
+      <p class="h-note hidden" id="paid"></p>
 
-  <div class="panel" id="devices-panel">
-    <h3>Anki Installs</h3>
-    <ul class="plain list" id="devices"></ul>
-    <p class="muted small hidden" id="no-devices">No installs linked yet.</p>
-    <div class="row"><button class="hidden" id="unlink">Sign Out of All Installs</button></div>
-  </div>
+      <div class="h-card">
+        <div class="h-row">
+          <div class="h-left"><div class="h-name">Credits</div></div>
+          <div class="h-actions">
+            <a class="h-btn" href="/pricing/" id="upgrade">View Plans</a>
+            <button class="h-btn outline" id="pack" type="button">Buy 400 Credits</button>
+            <button class="h-btn outline hidden" id="billing" type="button">Manage Billing</button>
+          </div>
+        </div>
+        <div class="h-list a-credits">
+          <div class="a-left"><span id="left">0</span> <span class="a-left-note" id="left-note">credits remaining</span></div>
+          <dl class="a-kv">
+            <dt>Plan</dt><dd id="plan">None</dd>
+            <dt class="hidden" id="month-k">This month</dt><dd class="hidden" id="month"></dd>
+            <dt class="hidden" id="free-k">Free credits</dt><dd class="hidden" id="free"></dd>
+            <dt class="hidden" id="packs-k">Purchased credits</dt><dd class="hidden" id="packs"></dd>
+          </dl>
+        </div>
+      </div>
 
-  <div class="panel">
-    <h3>History</h3>
-    <ul class="plain list" id="jobs"></ul>
-    <p class="muted small hidden" id="no-jobs">No activity yet.</p>
-  </div>
+      <div class="h-card" id="devices-panel">
+        <div class="h-row">
+          <div class="h-left"><div class="h-name">Anki Installs</div></div>
+          <div class="h-actions"><button class="h-btn outline hidden" id="unlink" type="button">Sign Out of All Installs</button></div>
+        </div>
+        <div class="h-list" id="devices"></div>
+        <div class="h-list hidden" id="no-devices"><div class="h-empty">No installs linked yet.</div></div>
+      </div>
 
-  <div class="row center" style="margin-top:22px">
-    <button id="sign-out">Sign Out</button>
-    <button id="delete">Delete Account</button>
-    <button class="hidden" id="delete-yes">Delete My Account and History</button>
-    <button class="hidden" id="delete-no">Cancel</button>
+      <div class="h-card">
+        <div class="h-row"><div class="h-left"><div class="h-name">History</div></div></div>
+        <div class="h-list" id="jobs"></div>
+        <div class="h-list hidden" id="no-jobs"><div class="h-empty">No activity yet.</div></div>
+      </div>
+
+      <div class="a-end">
+        <button class="h-btn outline" id="sign-out" type="button">Sign Out</button>
+        <button class="h-btn outline" id="delete" type="button">Delete Account</button>
+        <button class="h-btn danger hidden" id="delete-yes" type="button">Delete My Account and History</button>
+        <button class="h-btn outline hidden" id="delete-no" type="button">Cancel</button>
+      </div>
+    </div>
+    <p class="h-error hidden" id="acct-error" role="alert"></p>
   </div>
 </div>
-<p class="error hidden center" id="acct-error" role="alert"></p>
+</div>
 """, script="""<script type="module">
 import { watchUser, signIn, signOut, deleteSignIn, api, when } from "/assets/app.js";
 const $ = (id) => document.getElementById(id);
@@ -327,13 +385,21 @@ function credits(me) {
     pack: c.pack ?? me.pack_pages ?? 0,
   };
 }
+function item(name, stat) {
+  const d = document.createElement("div");
+  d.className = "h-item";
+  d.innerHTML = '<span class="h-item-name"></span><span class="h-stat"></span>';
+  d.children[0].textContent = name;
+  d.children[1].textContent = stat;
+  return d;
+}
 const row = (id, text) => { $(id).textContent = text || ""; $(id).classList.toggle("hidden", !text); $(id + "-k").classList.toggle("hidden", !text); };
 async function load() {
   const me = await api("/v1/me", { user });
   const c = credits(me);
   $("who").textContent = me.email || "";
   $("left").textContent = n(c.left);
-  $("left-note").textContent = c.left === 1 ? "Credit remaining" : "Credits remaining";
+  $("left-note").textContent = c.left === 1 ? "credit remaining" : "credits remaining";
   $("plan").textContent = me.plan === "yearly" ? "Yearly" : me.plan === "monthly" ? "Monthly" : "None";
   row("month", me.plan ? `${n(c.used)} of ${n(c.allowance)} used` : "");
   row("free", c.free ? `${n(c.free)} remaining` : "");
@@ -341,23 +407,13 @@ async function load() {
   $("upgrade").classList.toggle("hidden", !!me.plan);
   $("billing").classList.toggle("hidden", !me.plan && !c.pack && !paid);
   const dev = $("devices"); dev.replaceChildren();
-  for (const d of me.devices) {
-    const li = document.createElement("li");
-    li.innerHTML = "<span></span><span></span>";
-    li.children[0].textContent = d.label || "Anki";
-    li.children[1].textContent = d.last_used ? `Last used ${when(d.last_used)}` : `Linked ${when(d.created_at)}`;
-    dev.append(li);
-  }
+  for (const d of me.devices) dev.append(item(d.label || "Anki", d.last_used ? `Last used ${when(d.last_used)}` : `Linked ${when(d.created_at)}`));
+  dev.classList.toggle("hidden", me.devices.length === 0);
   $("no-devices").classList.toggle("hidden", me.devices.length > 0);
   $("unlink").classList.toggle("hidden", me.devices.length === 0);
   const jobs = $("jobs"); jobs.replaceChildren();
-  for (const j of me.jobs) {
-    const li = document.createElement("li");
-    li.innerHTML = "<span></span><span></span>";
-    li.children[0].textContent = j.lecture || "Untitled PDF";
-    li.children[1].textContent = `${j.slides_total} ${j.slides_total === 1 ? "slide" : "slides"}, ${when(j.created_at)}`;
-    jobs.append(li);
-  }
+  for (const j of me.jobs) jobs.append(item(j.lecture || "Untitled PDF", `${j.slides_total} ${j.slides_total === 1 ? "slide" : "slides"}, ${when(j.created_at)}`));
+  jobs.classList.toggle("hidden", me.jobs.length === 0);
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
 }
 watchUser(async (u) => {
@@ -403,7 +459,6 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
     <span class="h-who" id="h-who"></span>
     <span class="h-rule"></span>
     <button class="h-link" id="h-history-btn" type="button" aria-expanded="false">History</button>
-    <a class="h-link" href="/pricing/">Pricing</a>
     <a class="h-link" href="/account/">Account</a>
   </div>
 </div>
@@ -417,13 +472,17 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
     </div>
     <div class="h-card hidden" id="h-mine">
       <div class="h-row">
-        <div class="h-left">
-          <div class="h-name">Your Quizzes</div>
-          <div class="h-count" id="h-mine-count"></div>
-          <div class="h-count" id="h-mine-stat"></div>
+        <div class="h-left"><div class="h-name">Your Quizzes</div></div>
+        <div class="h-actions">
+          <button class="h-btn outline" id="h-new-group" type="button">New Group</button>
+          <button class="h-btn" id="h-shuffle-all" type="button">Shuffle All</button>
         </div>
-        <div class="h-actions"><button class="h-btn" id="h-shuffle-all" type="button">Shuffle All</button></div>
       </div>
+      <form class="h-name-form hidden" id="h-new-form">
+        <input id="h-new-name" type="text" placeholder="Group name" aria-label="Group name" maxlength="60" autocomplete="off">
+        <button class="h-btn" type="submit" id="h-new-go" disabled>Create</button>
+        <button class="h-btn outline" type="button" id="h-new-cancel">Cancel</button>
+      </form>
       <div class="h-list" id="h-mine-list"></div>
     </div>
     <div class="h-card hidden" id="h-shared">
@@ -453,6 +512,11 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
     <button type="button" data-only="flagged"></button>
   </div>
   <button class="h-btn" type="button" id="h-pick-go">Start</button>
+  <select class="h-select" id="h-pick-move" aria-label="Move to group"></select>
+  <form class="h-name-form hidden" id="h-move-form">
+    <input id="h-move-name" type="text" placeholder="Group name" aria-label="New group name" maxlength="60" autocomplete="off">
+    <button class="h-btn" type="submit" id="h-move-go" disabled>Move</button>
+  </form>
   <button class="h-btn outline" type="button" id="h-pick-clear">Clear</button>
 </div>
 </div>

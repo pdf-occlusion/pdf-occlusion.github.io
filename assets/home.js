@@ -56,24 +56,82 @@ function quizRow(q, tickable) {
     const b = el("button", "h-small", "Copy Link");
     b.type = "button";
     b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); copyLink(q.id, b); });
-    a.append(b);
+    const d = el("button", "h-small", "Delete");
+    d.type = "button";
+    d.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); deleteQuiz(q, d); });
+    a.append(b, d);
   }
   return a;
 }
 
+// first click arms the button, the second deletes
+function armed(b, label) {
+  if (b.classList.contains("armed")) return true;
+  for (const x of document.querySelectorAll(".h-small.armed")) { x.classList.remove("armed"); x.textContent = x.dataset.label || "Delete"; }
+  b.dataset.label = label;
+  b.classList.add("armed");
+  b.textContent = "Confirm Delete";
+  return false;
+}
+async function deleteQuiz(q, b) {
+  if (!armed(b, "Delete")) return;
+  b.disabled = true;
+  try {
+    await api(`/v1/quiz/${enc(q.id)}`, { method: "DELETE", user });
+    mine = mine.filter((x) => x.id !== q.id);
+    P.forgetQuiz(q.id);
+    paintAll();
+  } catch (e) { err(e.message || "The quiz could not be deleted."); b.disabled = false; }
+}
+
 const monthOf = (t) => new Date(t).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+const groupOf = (q) => q.folder || monthOf(q.created_at);
 const playSet = (ids) => (ids.length === 1 ? `/quiz/?id=${enc(ids[0])}` : `/quiz/?set=${ids.map(enc).join(",")}`);
+
+// Groups made here that have no quizzes yet; once a quiz is moved in, the
+// server keeps the name with the quiz.
+const EMPTY = "po-empty-groups";
+const emptyGroups = () => { try { return JSON.parse(localStorage.getItem(EMPTY)) || []; } catch { return []; } };
+const setEmptyGroups = (a) => { try { localStorage.setItem(EMPTY, JSON.stringify([...new Set(a)])); } catch {} };
+
+function groups() {
+  const map = new Map();
+  for (const name of emptyGroups()) map.set(name, []);
+  for (const q of mine) {
+    const k = groupOf(q);
+    if (!map.has(k)) map.set(k, []);
+    map.get(k).push(q);
+  }
+  // named groups that now hold quizzes no longer need remembering here
+  const still = emptyGroups().filter((n) => !map.get(n).length);
+  if (still.length !== emptyGroups().length) setEmptyGroups(still);
+  return map;
+}
+
+async function moveTo(ids, folder) {
+  await api("/v1/quizzes/move", { method: "POST", body: { ids, folder }, user });
+  const set = new Set(ids);
+  for (const q of mine) if (set.has(q.id)) q.folder = folder || null;
+  paintAll();
+}
+
+function nameForm(start, onSave, onCancel) {
+  const f = el("form", "h-name-form");
+  const i = el("input");
+  i.type = "text"; i.maxLength = 60; i.value = start; i.setAttribute("aria-label", "Group name");
+  const ok = el("button", "h-small", "Save"); ok.type = "submit";
+  const no = el("button", "h-small", "Cancel"); no.type = "button";
+  f.append(i, ok, no);
+  f.addEventListener("submit", (e) => { e.preventDefault(); const v = i.value.trim(); if (v) onSave(v); });
+  no.addEventListener("click", onCancel);
+  setTimeout(() => { i.focus(); i.select(); });
+  return f;
+}
 
 function paintMine() {
   const list = $("h-mine-list");
   list.replaceChildren();
-  const groups = new Map();
-  for (const q of mine) {
-    const k = monthOf(q.created_at);
-    if (!groups.has(k)) groups.set(k, []);
-    groups.get(k).push(q);
-  }
-  for (const [name, items] of groups) {
+  for (const [name, items] of groups()) {
     const g = el("div", "h-group");
     const head = el("div", "h-group-head");
     const t = el("button", "h-tick");
@@ -81,31 +139,69 @@ function paintMine() {
     t.setAttribute("role", "checkbox");
     t.setAttribute("aria-checked", "false");
     t.setAttribute("aria-label", `Add all of ${name} to a practice set`);
+    t.disabled = !items.length;
     const title = el("div", "h-group-title");
     const s = standing(items);
     const count = el("span", "h-group-count");
-    for (const c of [plural(items.length, "quiz", "quizzes"), `${s.total} Qs`, s.seen ? pct(s.right, s.seen) : ""].filter(Boolean)) count.append(el("span", "", c));
+    for (const c of [items.length ? plural(items.length, "quiz", "quizzes") : "", items.length ? `${s.total} Qs` : "", s.seen ? pct(s.right, s.seen) : ""].filter(Boolean)) count.append(el("span", "", c));
     title.append(el("span", "h-group-name", name), count);
-    const shuffle = el("button", "h-small", "Shuffle");
-    shuffle.type = "button";
-    shuffle.title = `Shuffle every question in ${name}`;
-    shuffle.addEventListener("click", () => { location.href = playSet(items.map((q) => q.id)); });
-    head.append(t, title, shuffle);
+    const rename = el("button", "h-small", "Rename");
+    rename.type = "button";
+    rename.addEventListener("click", () => {
+      const back = () => head.replaceChildren(t, title, ...tools);
+      head.replaceChildren(t, nameForm(name, async (v) => {
+        if (v === name) return back();
+        try {
+          if (items.length) await moveTo(items.map((q) => q.id), v);
+          else { setEmptyGroups(emptyGroups().map((n) => (n === name ? v : n))); paintAll(); }
+        } catch (e) { err(e.message || "The group could not be renamed."); back(); }
+      }, back));
+    });
+    let tools;
+    if (items.length) {
+      const shuffle = el("button", "h-small", "Shuffle");
+      shuffle.type = "button";
+      shuffle.title = `Shuffle every question in ${name}`;
+      shuffle.addEventListener("click", () => { location.href = playSet(items.map((q) => q.id)); });
+      tools = [rename, shuffle];
+    } else {
+      const del = el("button", "h-small", "Delete");
+      del.type = "button";
+      del.addEventListener("click", () => { if (armed(del, "Delete")) { setEmptyGroups(emptyGroups().filter((n) => n !== name)); paintAll(); } });
+      tools = [rename, del];
+    }
+    head.append(t, title, ...tools);
     const rows = el("div", "h-group-items");
     for (const q of items) rows.append(quizRow(q, true));
+    if (!items.length) rows.append(el("div", "h-empty", "No quizzes in this group."));
     g.append(head, rows);
     list.append(g);
   }
-  if (!mine.length) list.append(el("div", "h-empty", "No quizzes yet."));
-  const s = standing(mine);
-  const count = $("h-mine-count");
-  count.replaceChildren(...(mine.length ? [el("span", "", `${s.total} Qs`), el("span", "", plural(mine.length, "quiz", "quizzes"))] : []));
-  const st = $("h-mine-stat");
-  st.replaceChildren(...(s.seen ? [el("span", "", `${s.seen} tried`), el("span", "", pct(s.right, s.seen))] : []));
+  if (!list.children.length) list.append(el("div", "h-empty", "No quizzes yet."));
   $("h-shuffle-all").disabled = mine.length < 1;
   show("h-ids", mine.length > 0);
   paintPick();
 }
+
+// a new, empty group from the button at the top of Your Quizzes
+const newOpen = (on) => {
+  show("h-new-form", on);
+  $("h-new-group").disabled = on;
+  $("h-new-name").value = "";
+  $("h-new-go").disabled = true;
+  if (on) $("h-new-name").focus();
+};
+$("h-new-group").addEventListener("click", () => newOpen(true));
+$("h-new-cancel").addEventListener("click", () => newOpen(false));
+$("h-new-name").addEventListener("input", () => { $("h-new-go").disabled = !$("h-new-name").value.trim(); });
+$("h-new-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const v = $("h-new-name").value.trim();
+  if (!v) return;
+  if (!groups().has(v)) setEmptyGroups([v, ...emptyGroups()]);
+  newOpen(false);
+  paintAll();
+});
 $("h-shuffle-all").addEventListener("click", () => { if (mine.length) location.href = playSet(mine.map((q) => q.id)); });
 
 // ------------------------------------------------ shared with you
@@ -212,7 +308,7 @@ function paintPick() {
     t.classList.toggle("on", on);
     t.setAttribute("aria-checked", on ? "true" : "false");
   }
-  if (!rows.length) { pickOnly = "all"; return; }
+  if (!rows.length) { pickOnly = "all"; show("h-move-form", false); show("h-pick-move", true); return; }
   const ids = new Set(rows.map((r) => r.dataset.id));
   const s = standing(mine.filter((q) => ids.has(q.id)));
   const counts = { all: s.total, missed: s.seen - s.right, unseen: s.total - s.seen, flagged: s.flagged };
@@ -225,7 +321,32 @@ function paintPick() {
     b.classList.toggle("on", k === pickOnly && !!counts[k]);
   }
   $("h-pick-go").disabled = !counts[pickOnly];
+  const sel = $("h-pick-move");
+  sel.replaceChildren(new Option("Move To", ""), ...[...groups().keys()].map((n) => new Option(n, n)), new Option("New Group", "\u0000new"));
+  sel.value = "";
 }
+$("h-pick-move").addEventListener("change", async () => {
+  const v = $("h-pick-move").value;
+  if (!v) return;
+  if (v === "\u0000new") {
+    show("h-move-form", true);
+    show("h-pick-move", false);
+    $("h-move-name").value = "";
+    $("h-move-go").disabled = true;
+    $("h-move-name").focus();
+    return;
+  }
+  try { await moveTo(pickedRows().map((r) => r.dataset.id), v); } catch (e) { err(e.message || "The quizzes could not be moved."); }
+});
+$("h-move-name").addEventListener("input", () => { $("h-move-go").disabled = !$("h-move-name").value.trim(); });
+$("h-move-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const v = $("h-move-name").value.trim();
+  if (!v) return;
+  show("h-move-form", false);
+  show("h-pick-move", true);
+  try { await moveTo(pickedRows().map((r) => r.dataset.id), v); } catch (e) { err(e.message || "The quizzes could not be moved."); }
+});
 $("h-pick-only").addEventListener("click", (e) => {
   const b = e.target.closest("button");
   if (!b || b.disabled) return;
@@ -279,7 +400,7 @@ watchUser(async (u) => {
   paintAll();
   // your quizzes, and your practice from every device; whichever comes first shows first
   const listed = api("/v1/quizzes", { user }).then(({ quizzes = [] }) => {
-    mine = quizzes.map((q) => ({ id: q.id, name: q.lecture || "Untitled PDF", n: q.n_questions || 0, created_at: q.created_at, query: `id=${enc(q.id)}`, owner: true }));
+    mine = quizzes.map((q) => ({ id: q.id, name: q.lecture || "Untitled PDF", n: q.n_questions || 0, created_at: q.created_at, folder: q.folder || null, query: `id=${enc(q.id)}`, owner: true }));
     paintAll();
   }, (e) => err(e.message));
   await Promise.all([listed, S.pullAll().then(paintAll)]);

@@ -320,3 +320,11 @@ export function forgetExcept(keep) {
   }
   put("po-tests", all);
 }
+
+// A deleted quiz: its practice here and the tests made from it go.
+export function forgetQuiz(id) {
+  const all = tests();
+  drop(QH(id));
+  for (const [tid, line] of Object.entries(all)) if (homeOf(line) === id) { delete all[tid]; drop(`po-run-${tid}`); }
+  put("po-tests", all);
+}

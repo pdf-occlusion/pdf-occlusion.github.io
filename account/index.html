@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="is-home">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,72 +16,80 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=29bbfd12">
+<link rel="stylesheet" href="/assets/site.css?v=40c60a3b">
 </head>
-<body>
-<main>
-<a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; Back</a>
-<div class="top small">
-  <a href="/" aria-label="PDF Occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
-  <h1>Account</h1>
-  <nav class="links" aria-label="Main">
-    <a href="/pricing/">Pricing</a>
-    <a href="/quiz/">Quizzes</a>
-    <a href="/account/" aria-current="page">Account</a>
-  </nav>
+<body class="qh">
+<main class="wide">
+<div class="qh-wrap">
+<div class="h-top">
+  <div class="h-top-left">
+    <a class="h-back" href="/">&larr; PDF Occlusion</a>
+    <div class="h-title">Account</div>
+  </div>
+  <div class="h-top-right">
+    <span class="h-who" id="who"></span>
+    <span class="h-rule"></span>
+    <a class="h-link" href="/quiz/">Quizzes</a>
+  </div>
 </div>
-
-<div id="signed-out" class="hidden">
-  <p class="lede">Sign in to see your credits and plan.</p>
-  <div class="row center" style="margin-top:22px"><button id="sign-in"><svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>Sign In with Google</button></div>
-</div>
-
-<div id="signed-in" class="hidden">
-  <p class="lede" id="who"></p>
-  <p class="note center hidden" id="paid"></p>
-
-  <div class="panel" style="margin-top:26px">
-    <div class="left" id="left">0</div>
-    <div class="muted" id="left-note">Credits remaining</div>
-    <dl class="kv">
-      <dt>Plan</dt><dd id="plan">None</dd>
-      <dt class="hidden" id="month-k">This month</dt><dd class="hidden" id="month"></dd>
-      <dt class="hidden" id="free-k">Free credits</dt><dd class="hidden" id="free"></dd>
-      <dt class="hidden" id="packs-k">Purchased credits</dt><dd class="hidden" id="packs"></dd>
-    </dl>
-    <div class="row">
-      <a class="btn primary" href="/pricing/" id="upgrade">View Plans</a>
-      <button id="pack">Buy 400 Credits</button>
-      <button class="hidden" id="billing">Manage Billing</button>
+<div class="h-content">
+  <div class="h-desk">
+    <div class="h-card hidden" id="signed-out">
+      <div class="h-row">
+        <div class="h-left"><div class="h-name">Sign In to See Your Credits and Plan</div></div>
+        <div class="h-actions"><button class="h-btn" id="sign-in" type="button"><svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>Sign In with Google</button></div>
+      </div>
     </div>
-  </div>
 
-  <div class="panel quizzes-link">
-    <h3>Quizzes</h3>
-    <div class="row"><a class="btn primary" href="/quiz/">Open Quizzes</a></div>
-  </div>
+    <div class="hidden a-stack" id="signed-in">
+      <p class="h-note hidden" id="paid"></p>
 
-  <div class="panel" id="devices-panel">
-    <h3>Anki Installs</h3>
-    <ul class="plain list" id="devices"></ul>
-    <p class="muted small hidden" id="no-devices">No installs linked yet.</p>
-    <div class="row"><button class="hidden" id="unlink">Sign Out of All Installs</button></div>
-  </div>
+      <div class="h-card">
+        <div class="h-row">
+          <div class="h-left"><div class="h-name">Credits</div></div>
+          <div class="h-actions">
+            <a class="h-btn" href="/pricing/" id="upgrade">View Plans</a>
+            <button class="h-btn outline" id="pack" type="button">Buy 400 Credits</button>
+            <button class="h-btn outline hidden" id="billing" type="button">Manage Billing</button>
+          </div>
+        </div>
+        <div class="h-list a-credits">
+          <div class="a-left"><span id="left">0</span> <span class="a-left-note" id="left-note">credits remaining</span></div>
+          <dl class="a-kv">
+            <dt>Plan</dt><dd id="plan">None</dd>
+            <dt class="hidden" id="month-k">This month</dt><dd class="hidden" id="month"></dd>
+            <dt class="hidden" id="free-k">Free credits</dt><dd class="hidden" id="free"></dd>
+            <dt class="hidden" id="packs-k">Purchased credits</dt><dd class="hidden" id="packs"></dd>
+          </dl>
+        </div>
+      </div>
 
-  <div class="panel">
-    <h3>History</h3>
-    <ul class="plain list" id="jobs"></ul>
-    <p class="muted small hidden" id="no-jobs">No activity yet.</p>
-  </div>
+      <div class="h-card" id="devices-panel">
+        <div class="h-row">
+          <div class="h-left"><div class="h-name">Anki Installs</div></div>
+          <div class="h-actions"><button class="h-btn outline hidden" id="unlink" type="button">Sign Out of All Installs</button></div>
+        </div>
+        <div class="h-list" id="devices"></div>
+        <div class="h-list hidden" id="no-devices"><div class="h-empty">No installs linked yet.</div></div>
+      </div>
 
-  <div class="row center" style="margin-top:22px">
-    <button id="sign-out">Sign Out</button>
-    <button id="delete">Delete Account</button>
-    <button class="hidden" id="delete-yes">Delete My Account and History</button>
-    <button class="hidden" id="delete-no">Cancel</button>
+      <div class="h-card">
+        <div class="h-row"><div class="h-left"><div class="h-name">History</div></div></div>
+        <div class="h-list" id="jobs"></div>
+        <div class="h-list hidden" id="no-jobs"><div class="h-empty">No activity yet.</div></div>
+      </div>
+
+      <div class="a-end">
+        <button class="h-btn outline" id="sign-out" type="button">Sign Out</button>
+        <button class="h-btn outline" id="delete" type="button">Delete Account</button>
+        <button class="h-btn danger hidden" id="delete-yes" type="button">Delete My Account and History</button>
+        <button class="h-btn outline hidden" id="delete-no" type="button">Cancel</button>
+      </div>
+    </div>
+    <p class="h-error hidden" id="acct-error" role="alert"></p>
   </div>
 </div>
-<p class="error hidden center" id="acct-error" role="alert"></p>
+</div>
 </main>
 <footer>
   <nav aria-label="Footer">
@@ -114,13 +122,21 @@ function credits(me) {
     pack: c.pack ?? me.pack_pages ?? 0,
   };
 }
+function item(name, stat) {
+  const d = document.createElement("div");
+  d.className = "h-item";
+  d.innerHTML = '<span class="h-item-name"></span><span class="h-stat"></span>';
+  d.children[0].textContent = name;
+  d.children[1].textContent = stat;
+  return d;
+}
 const row = (id, text) => { $(id).textContent = text || ""; $(id).classList.toggle("hidden", !text); $(id + "-k").classList.toggle("hidden", !text); };
 async function load() {
   const me = await api("/v1/me", { user });
   const c = credits(me);
   $("who").textContent = me.email || "";
   $("left").textContent = n(c.left);
-  $("left-note").textContent = c.left === 1 ? "Credit remaining" : "Credits remaining";
+  $("left-note").textContent = c.left === 1 ? "credit remaining" : "credits remaining";
   $("plan").textContent = me.plan === "yearly" ? "Yearly" : me.plan === "monthly" ? "Monthly" : "None";
   row("month", me.plan ? `${n(c.used)} of ${n(c.allowance)} used` : "");
   row("free", c.free ? `${n(c.free)} remaining` : "");
@@ -128,23 +144,13 @@ async function load() {
   $("upgrade").classList.toggle("hidden", !!me.plan);
   $("billing").classList.toggle("hidden", !me.plan && !c.pack && !paid);
   const dev = $("devices"); dev.replaceChildren();
-  for (const d of me.devices) {
-    const li = document.createElement("li");
-    li.innerHTML = "<span></span><span></span>";
-    li.children[0].textContent = d.label || "Anki";
-    li.children[1].textContent = d.last_used ? `Last used ${when(d.last_used)}` : `Linked ${when(d.created_at)}`;
-    dev.append(li);
-  }
+  for (const d of me.devices) dev.append(item(d.label || "Anki", d.last_used ? `Last used ${when(d.last_used)}` : `Linked ${when(d.created_at)}`));
+  dev.classList.toggle("hidden", me.devices.length === 0);
   $("no-devices").classList.toggle("hidden", me.devices.length > 0);
   $("unlink").classList.toggle("hidden", me.devices.length === 0);
   const jobs = $("jobs"); jobs.replaceChildren();
-  for (const j of me.jobs) {
-    const li = document.createElement("li");
-    li.innerHTML = "<span></span><span></span>";
-    li.children[0].textContent = j.lecture || "Untitled PDF";
-    li.children[1].textContent = `${j.slides_total} ${j.slides_total === 1 ? "slide" : "slides"}, ${when(j.created_at)}`;
-    jobs.append(li);
-  }
+  for (const j of me.jobs) jobs.append(item(j.lecture || "Untitled PDF", `${j.slides_total} ${j.slides_total === 1 ? "slide" : "slides"}, ${when(j.created_at)}`));
+  jobs.classList.toggle("hidden", me.jobs.length === 0);
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
 }
 watchUser(async (u) => {
