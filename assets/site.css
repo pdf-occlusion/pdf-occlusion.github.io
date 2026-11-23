@@ -70,7 +70,20 @@ nav.links a[aria-current] { color: var(--ink); }
 .badge-k { background: #4a4256; color: #efe9f6; }
 .badge-v { background: #7c5cc4; color: #fff; font-weight: 500; }
 
-.lede { text-align: center; color: var(--accent); max-width: 44ch; margin: 18px auto 0; }
+.lede { text-align: center; color: var(--accent); max-width: 44ch; margin: 18px auto 0; text-wrap: balance; }
+
+/* home: the one action, under the lede and again at the end */
+.cta { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 22px; }
+.cta .badges { margin: 0; }
+.btn.big {
+  font-size: 1.05rem; padding: 11px 26px; border-radius: 12px; gap: 10px;
+  box-shadow: 0 6px 18px rgba(70, 50, 110, 0.24); transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.btn.big:hover { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(70, 50, 110, 0.3); }
+.btn.big svg { width: 18px; height: 18px; }
+section.end { margin-top: 56px; }
+section.end h2 { margin-bottom: 0; }
+section.end .cta { margin-top: 14px; }
 
 section { margin-top: 40px; }
 section.center h2 { text-align: center; margin-bottom: 14px; }

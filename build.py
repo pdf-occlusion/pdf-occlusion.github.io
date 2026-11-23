@@ -120,18 +120,23 @@ G_ICON = ('<svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill
           '<path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>')
 
 # ------------------------------------------------------------------ home
+GET = (f'<a class="btn primary big" href="{ANKIWEB}">'
+       '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" fill="none" '
+       'stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Get the Add-on</a>')
+
 page("index.html", "PDF Occlusion for Anki",
      "PDF Occlusion is an Anki add-on that turns lecture PDFs into image occlusion cards. Generate places the boxes, writes text cards or makes a practice quiz.",
      body=top("PDF Occlusion for Anki", small=False) + f"""
-<div class="badges">
-  <span class="badge"><span class="badge-k">Add-on code</span><span class="badge-v">783821131</span></span>
-  <span class="badge"><span class="badge-k">Anki</span><span class="badge-v">23.10+</span></span>
-  <span class="badge"><span class="badge-k">License</span><span class="badge-v">MIT</span></span>
-</div>
-
 <p class="lede">Generate turns a lecture PDF into boxes, cards or a quiz.</p>
 
-<div class="row center"><a class="btn primary" href="{ANKIWEB}">Get the Add-on</a></div>
+<div class="cta">
+  {GET}
+  <div class="badges">
+    <span class="badge"><span class="badge-k">Add-on code</span><span class="badge-v">783821131</span></span>
+    <span class="badge"><span class="badge-k">Anki</span><span class="badge-v">23.10+</span></span>
+    <span class="badge"><span class="badge-k">License</span><span class="badge-v">MIT</span></span>
+  </div>
+</div>
 
 <div class="panel demo">
   <img src="/assets/demo.gif" width="840" height="525" alt="PDF Occlusion open in Anki, placing boxes over the labels of a physiology slide">
@@ -175,6 +180,11 @@ page("index.html", "PDF Occlusion for Anki",
     <li>Pages to skip</li>
     <li>Your own rules</li>
   </ul>
+</section>
+
+<section class="center end">
+  <h2>Free to Install</h2>
+  <div class="cta">{GET}</div>
 </section>
 """)
 
