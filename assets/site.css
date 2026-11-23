@@ -7,7 +7,7 @@
   --accent: #5c4f7a;
   --accent-hi: #6e5f90;
   --accent-lo: #3e3456;
-  --muted: #8a84a3;
+  --muted: #625c7b;
   --card: rgba(255, 255, 255, 0.6);
   --line: rgba(92, 79, 122, 0.18);
   --gray: #c9c5d1;
@@ -391,19 +391,19 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 }
 .qh .h-top-left, .qh .h-top-right { display: flex; align-items: center; gap: 1rem; min-width: 0; }
 .qh .h-top-right { gap: 0.7rem; }
-.qh .h-back { font-size: 0.85rem; color: var(--accent); opacity: 0.7; white-space: nowrap; transition: opacity 0.15s; }
-.qh .h-back:hover { opacity: 1; }
+.qh .h-back { font-size: 0.88rem; color: var(--muted); white-space: nowrap; transition: opacity 0.15s; }
+.qh .h-back:hover { color: var(--accent); }
 .qh .h-title { font-size: 0.95rem; color: var(--ink); }
 .qh .h-link {
   display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border: 1px solid var(--h-line);
-  border-radius: 6px; font-size: 0.72rem; color: var(--accent); white-space: nowrap; transition: border-color 0.15s, background 0.15s;
+  border-radius: 6px; font-size: 0.8rem; color: var(--accent); white-space: nowrap; transition: border-color 0.15s, background 0.15s;
 }
 .qh .h-link:hover { border-color: var(--accent); background: rgba(92, 79, 122, 0.06); }
 .qh button.h-link { background: transparent; cursor: pointer; }
 .qh .h-link.on { border-color: var(--accent); background: rgba(92, 79, 122, 0.1); }
 .qh button.h-link:disabled { color: #a3a1ab; border-color: #d9d7de; background: transparent; cursor: default; }
 .qh .h-rule { align-self: stretch; width: 1px; margin: 0.15rem 0.1rem; background: var(--h-line); }
-.qh .h-who { font-size: 0.78rem; color: var(--accent); opacity: 0.7; text-transform: lowercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.qh .h-who { font-size: 0.82rem; color: var(--muted); text-transform: lowercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .qh .h-who:empty, .qh .h-who:empty + .h-rule { display: none; }
 .qh .h-content { display: flex; flex-direction: column; align-items: center; width: 100%; padding: 2rem 1.5rem 4rem; }
 .qh.picking .h-content { padding-bottom: 8rem; }
@@ -416,12 +416,12 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 .qh .h-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .qh .h-left { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.6rem; min-width: 0; }
 .qh .h-name { font-size: 1rem; color: var(--ink); }
-.qh .h-count { display: inline-flex; gap: 0.7em; font-size: 0.78rem; color: var(--accent); opacity: 0.7; white-space: nowrap; }
+.qh .h-count { display: inline-flex; gap: 0.7em; font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
 .qh .h-count:empty { display: none; }
 .qh .h-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
 .qh .h-btn {
   display: inline-flex; align-items: center; justify-content: center; height: 30px; padding: 0 12px; border: none; border-radius: 6px;
-  background: var(--accent); color: var(--h-card); font-size: 0.78rem; white-space: nowrap; transition: background-color 0.2s ease;
+  background: var(--accent); color: var(--h-card); font-size: 0.84rem; white-space: nowrap; transition: background-color 0.2s ease;
 }
 .qh .h-btn:hover:not(:disabled) { background: var(--accent-hi); }
 .qh .h-btn:active:not(:disabled) { background: var(--accent-lo); }
@@ -429,20 +429,20 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 .qh .h-btn.outline:hover:not(:disabled) { border-color: var(--accent); background: rgba(92, 79, 122, 0.06); }
 .qh .h-btn .g-icon { margin-right: 8px; }
 .qh .h-list { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--h-line); }
-.qh .h-empty { font-size: 0.8rem; color: var(--accent); opacity: 0.6; padding: 0.3rem 0.5rem; }
+.qh .h-empty { font-size: 0.86rem; color: var(--muted); padding: 0.3rem 0.5rem; }
 /* one quiz, or one test: name on the left, where you stand on the right */
 .qh .h-item {
   display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.3rem 0.5rem;
-  border-radius: 5px; background: rgba(92, 79, 122, 0.06); font-size: 0.82rem; color: var(--accent); transition: background 0.15s;
+  border-radius: 5px; background: rgba(92, 79, 122, 0.06); font-size: 0.9rem; color: var(--accent); transition: background 0.15s;
 }
 .qh .h-item:hover { background: rgba(92, 79, 122, 0.14); }
 .qh .h-item.picked { background: rgba(92, 79, 122, 0.16); }
 .qh .h-item-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qh .h-item-sub { opacity: 0.65; }
-.qh .h-stat { display: inline-flex; gap: 0.7em; flex-shrink: 0; font-size: 0.72rem; opacity: 0.65; white-space: nowrap; }
+.qh .h-item-sub { color: var(--muted); }
+.qh .h-stat { display: inline-flex; gap: 0.7em; flex-shrink: 0; font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
 .qh .h-small {
-  height: 22px; padding: 0 9px; flex-shrink: 0; border-radius: 5px; background: transparent; border: 1px solid var(--h-line);
-  color: var(--accent); font-size: 0.68rem; white-space: nowrap; transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  height: 24px; padding: 0 9px; flex-shrink: 0; border-radius: 5px; background: transparent; border: 1px solid var(--h-line);
+  color: var(--accent); font-size: 0.76rem; white-space: nowrap; transition: background-color 0.15s, border-color 0.15s, color 0.15s;
 }
 .qh .h-small:hover:not(:disabled) { background: var(--accent); border-color: var(--accent); color: var(--h-card); }
 .qh .h-small.armed, .qh .h-small.armed:hover { background: transparent; border-color: var(--red); color: var(--red); }
@@ -450,9 +450,9 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 /* a month of quizzes, with a box that ticks the lot */
 .qh .h-group { display: flex; flex-direction: column; }
 .qh .h-group-head { display: flex; align-items: center; gap: 0.4rem; }
-.qh .h-group-title { display: flex; align-items: baseline; gap: 0.5rem; flex: 1 1 auto; min-width: 0; padding: 0.35rem 0.5rem; color: var(--ink); font-size: 0.85rem; }
+.qh .h-group-title { display: flex; align-items: baseline; gap: 0.5rem; flex: 1 1 auto; min-width: 0; padding: 0.35rem 0.5rem; color: var(--ink); font-size: 0.92rem; }
 .qh .h-group-name { white-space: nowrap; }
-.qh .h-group-count { display: inline-flex; gap: 0.7em; margin-left: auto; font-size: 0.72rem; color: var(--accent); opacity: 0.55; white-space: nowrap; }
+.qh .h-group-count { display: inline-flex; gap: 0.7em; margin-left: auto; font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
 .qh .h-group-items { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.15rem 0 0.4rem 1.2rem; }
 .qh .h-tick {
   flex-shrink: 0; align-self: center; width: 0.8rem; height: 0.8rem; margin: -0.3rem 0; padding: 0.3rem;
@@ -461,21 +461,21 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
 .qh .h-tick:hover { background: none; }
 .qh .h-tick::before {
   content: ""; display: block; width: 100%; height: 100%; box-sizing: border-box; border: 1px solid var(--accent);
-  border-radius: 3px; opacity: 0.55; transition: background 0.12s, opacity 0.12s;
+  border-radius: 3px; opacity: 0.75; transition: background 0.12s, opacity 0.12s;
 }
 .qh .h-tick:hover::before { opacity: 1; }
 .qh .picked > .h-tick::before, .qh .h-tick.on::before { background: var(--accent); opacity: 1; }
-.qh .h-sub-head { padding: 0.45rem 0.5rem 0.15rem; font-size: 0.74rem; color: var(--accent); opacity: 0.6; }
+.qh .h-sub-head { padding: 0.45rem 0.5rem 0.15rem; font-size: 0.82rem; color: var(--muted); }
 .qh .h-list > .h-sub-head:first-child { padding-top: 0.1rem; }
 .qh .h-card.shut > :not(.h-row) { display: none; }
 /* questions by ID */
 .qh .h-ids { flex-direction: row; align-items: center; gap: 0.4rem; }
 .qh .h-ids input {
   flex: 1 1 auto; min-width: 0; height: 30px; padding: 0 0.6rem; border: 1px solid var(--h-line); border-radius: 6px;
-  background: var(--h-field); color: var(--ink); font: inherit; font-size: 0.82rem; outline: none;
+  background: var(--h-field); color: var(--ink); font: inherit; font-size: 0.88rem; outline: none;
 }
 .qh .h-ids input:focus { border-color: var(--accent); }
-.qh .h-ids input::placeholder { color: var(--accent); opacity: 0.5; }
+.qh .h-ids input::placeholder { color: var(--muted); opacity: 1; }
 /* nothing to start is plain gray */
 .qh .h-btn:disabled, .qh .h-btn:disabled:hover { background: #e4e4e4; border-color: #e4e4e4; color: #9a9a9a; cursor: default; }
 /* the set being picked, and what to play from it */
@@ -486,9 +486,9 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
   box-shadow: 0 10px 34px rgba(92, 79, 122, 0.22);
 }
 .qh .h-pickbar.open { display: flex; }
-.qh .h-pick-count { font-size: 0.8rem; color: var(--accent); white-space: nowrap; }
+.qh .h-pick-count { font-size: 0.86rem; color: var(--accent); white-space: nowrap; }
 .qh .h-seg { display: flex; border: 1px solid var(--h-line); border-radius: 6px; overflow: hidden; }
-.qh .h-seg button { height: 28px; padding: 0 10px; border: none; border-radius: 0; background: transparent; color: var(--accent); font-size: 0.74rem; white-space: nowrap; }
+.qh .h-seg button { height: 28px; padding: 0 10px; border: none; border-radius: 0; background: transparent; color: var(--accent); font-size: 0.8rem; white-space: nowrap; }
 .qh .h-seg button + button { border-left: 1px solid var(--h-line); }
 .qh .h-seg button:hover:not(:disabled) { background: rgba(92, 79, 122, 0.08); }
 .qh .h-seg button.on, .qh .h-seg button.on:hover { background: var(--accent); color: var(--h-card); }
@@ -503,11 +503,11 @@ mark.hl { background: #ffe98a; color: inherit; border-radius: 2px; padding: 0.05
   background: var(--h-field); color: var(--ink); font: inherit; font-size: 0.82rem; outline: none;
 }
 .qh .h-name-form input:focus { border-color: var(--accent); }
-.qh .h-name-form input::placeholder { color: var(--accent); opacity: 0.5; }
+.qh .h-name-form input::placeholder { color: var(--muted); opacity: 1; }
 .qh .h-pickbar .h-name-form { flex: 0 1 auto; }
 .qh .h-pickbar .h-name-form input { width: 11rem; height: 30px; }
 .qh .h-select {
-  height: 30px; padding: 0 1.6rem 0 0.6rem; border: 1px solid var(--h-line); border-radius: 6px; font: inherit; font-size: 0.78rem;
+  height: 30px; padding: 0 1.6rem 0 0.6rem; border: 1px solid var(--h-line); border-radius: 6px; font: inherit; font-size: 0.84rem;
   color: var(--accent); cursor: pointer; appearance: none; -webkit-appearance: none;
   background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235c4f7a' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 0.55rem center;
 }
@@ -567,9 +567,9 @@ ul.dots.details { color: var(--muted); font-size: 0.94rem; }
 .qh .a-credits { gap: 0.6rem; }
 .qh .a-left { padding: 0.1rem 0.5rem 0; color: var(--accent); }
 .qh .a-left #left { font-size: 2rem; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.qh .a-left-note { font-size: 0.85rem; opacity: 0.75; }
-.qh .a-kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1.2rem; padding: 0 0.5rem 0.2rem; font-size: 0.82rem; }
-.qh .a-kv dt { color: var(--accent); opacity: 0.7; }
+.qh .a-left-note { font-size: 0.9rem; color: var(--muted); }
+.qh .a-kv { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1.2rem; padding: 0 0.5rem 0.2rem; font-size: 0.9rem; }
+.qh .a-kv dt { color: var(--muted); }
 .qh .a-kv dd { color: var(--ink); }
 .qh .h-note { font-size: 0.85rem; color: var(--accent); text-align: center; }
 .qh .a-end { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
