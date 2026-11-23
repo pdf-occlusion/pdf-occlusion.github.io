@@ -464,7 +464,7 @@ addEventListener("resize", hidePop);
 function render() {
   const q = questions[cur()], resp = response(cur());
   resetTimer();
-  if (!resp.answered) toggleTimer();
+  if (!resp.answered && timerSec) toggleTimer();
   $("q-meta").textContent = `Question ${cur() + 1} of ${questions.length}`;
   const idBtn = $("q-id");
   clearTimeout(idBtn._flash);
@@ -607,10 +607,59 @@ function renderHistory() {
 }
 
 // ------------------------------------------------ timer
-// 1:30 per question from when it shows; click to pause or carry on. Past
-// 0:00 it turns red and counts the time over.
-const TIMER_MS = 90 * 1000;
-const timer = { left: TIMER_MS, end: 0, tick: 0 };
+// A set time per question from when it shows (1:30 unless changed in the top
+// bar, kept in this browser); click to pause or carry on. Past 0:00 it turns
+// red and counts the time over. Off hides it.
+const TIME_KEY = "po-timer-sec";
+let timerSec = 90;
+try { const v = localStorage.getItem(TIME_KEY); if (v != null && /^\d+$/.test(v)) timerSec = Math.min(Number(v), 5999); } catch {}
+const timer = { left: timerSec * 1000, end: 0, tick: 0 };
+const mss = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+function paintTimeSetting() {
+  const sel = $("q-time"), presets = [...sel.options].map((o) => o.value);
+  const custom = !presets.includes(String(timerSec));
+  let opt = sel.querySelector("option[data-set]");
+  if (custom) {
+    if (!opt) { opt = new Option("", ""); opt.dataset.set = "1"; sel.insertBefore(opt, sel.querySelector('option[value="custom"]')); }
+    opt.value = String(timerSec); opt.textContent = mss(timerSec);
+  } else if (opt) opt.remove();
+  sel.value = String(timerSec);
+  $("q-timer").classList.toggle("hidden", !timerSec);
+}
+function setTimeSetting(sec) {
+  timerSec = sec;
+  try { localStorage.setItem(TIME_KEY, String(sec)); } catch {}
+  paintTimeSetting();
+  if (!questions.length) return;
+  resetTimer();
+  if (timerSec && !response(cur()).answered) toggleTimer();
+}
+$("q-time").addEventListener("change", () => {
+  const v = $("q-time").value;
+  if (v !== "custom") { setTimeSetting(Number(v)); $("q-time").blur(); return; }
+  $("q-time").classList.add("hidden");
+  const i = $("q-time-custom");
+  i.value = timerSec ? mss(timerSec) : "";
+  i.classList.remove("hidden");
+  i.focus(); i.select();
+});
+// "2:30", "150" (seconds) or "2:" all work; anything else keeps the old time
+function closeCustom(apply) {
+  const i = $("q-time-custom");
+  if (i.classList.contains("hidden")) return;
+  const m = /^\s*(\d{1,2})?\s*:\s*(\d{0,2})\s*$/.exec(i.value), n = /^\s*(\d{1,4})\s*$/.exec(i.value);
+  const sec = m ? Number(m[1] || 0) * 60 + Number(m[2] || 0) : n ? Number(n[1]) : NaN;
+  i.classList.add("hidden");
+  $("q-time").classList.remove("hidden");
+  if (apply && sec > 0 && sec < 6000) setTimeSetting(sec); else paintTimeSetting();
+}
+$("q-time-custom").addEventListener("keydown", (e) => {
+  e.stopPropagation();
+  if (e.key === "Enter") { e.preventDefault(); closeCustom(true); }
+  if (e.key === "Escape") closeCustom(false);
+});
+$("q-time-custom").addEventListener("blur", () => closeCustom(true));
+paintTimeSetting();
 function paintTimer() {
   const el = $("q-timer");
   const over = timer.left < 0;
@@ -626,7 +675,7 @@ function stopTimer() {
   clearInterval(timer.tick);
   timer.tick = 0;
 }
-function resetTimer() { clearInterval(timer.tick); timer.tick = 0; timer.left = TIMER_MS; paintTimer(); }
+function resetTimer() { clearInterval(timer.tick); timer.tick = 0; timer.left = timerSec * 1000; paintTimer(); }
 function toggleTimer() {
   if (timer.tick) { stopTimer(); paintTimer(); return; }
   timer.end = Date.now() + timer.left;
@@ -651,13 +700,12 @@ function actions() {
   const submit = $("q-submit"), next = $("q-next"), flag = $("q-flag");
   submit.classList.toggle("hidden", x.answered);
   submit.disabled = x.answered || !x.selected;
-  next.classList.toggle("primary", x.answered);
-  next.textContent = x.answered ? (last ? "See Score" : "Next") : (last ? "Skip to Score" : "Skip");
-  next.title = x.answered ? (last ? "See your score" : "Next question (Right Arrow)") : "Skip this question (S)";
+  next.title = x.answered ? (last ? "See Your Score" : "Next Question (Right Arrow)") : (last ? "Skip to Score (S)" : "Skip This Question (S)");
+  next.setAttribute("aria-label", next.title);
   flag.classList.toggle("on", !!x.flagged);
-  flag.textContent = x.flagged ? "Flagged" : "Flag";
   flag.setAttribute("aria-pressed", x.flagged ? "true" : "false");
-  flag.title = x.flagged ? "Remove the flag (F)" : "Flag for review (F)";
+  flag.title = x.flagged ? "Remove the Flag (F)" : "Flag for Review (F)";
+  flag.setAttribute("aria-label", flag.title);
   $("q-back").disabled = current === 0 && !resultsOpen;
   resetButtons();
 }
@@ -752,7 +800,7 @@ function resetTest() {
   const b = $("q-reset-test");
   if (!resetArmed) {
     b.classList.add("armed");
-    b.textContent = "Confirm Reset";
+    b.textContent = "\u27F3 Confirm Reset";
     resetArmed = setTimeout(disarmReset, 3000);
     return;
   }
@@ -764,7 +812,7 @@ function disarmReset() {
   if (resetArmed) { clearTimeout(resetArmed); resetArmed = null; }
   const b = $("q-reset-test");
   b.classList.remove("armed");
-  b.textContent = "Reset Test";
+  b.textContent = "\u27F3";
 }
 
 // ------------------------------------------------ question navigator
@@ -1003,7 +1051,7 @@ document.addEventListener("keydown", (e) => {
   if (!questions.length || $("q-play").classList.contains("hidden") || document.querySelector(".q-veil")) return;
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   const t = e.target;
-  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+  if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
   const key = e.key, k = key.length === 1 ? key.toLowerCase() : key;
   if (key === "ArrowLeft") { e.preventDefault(); prevQuestion(); return; }
   if (key === "ArrowRight") { e.preventDefault(); nextQuestion(); return; }

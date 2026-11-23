@@ -552,7 +552,34 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
 """
 page("quiz/index.html", "Quiz", "Quizzes made from your lecture slides.", wide=True,
      body="""<script>(function () { var p = new URLSearchParams(location.search), home = !p.get("id") && !p.get("set") && !p.get("q"); document.documentElement.classList.add(home ? "is-home" : "is-play"); if (home) { document.title = "Quizzes"; document.body.classList.add("qh"); } })();</script>
-""" + QUIZ_HOME + '<div class="play-only">\n' + top("Quiz", "quiz").replace("<h1>", '<h1 id="q-title">').replace("</h1>", '</h1>\n  <p class="q-sub muted hidden" id="q-sub"></p>') + f"""
+""" + QUIZ_HOME + '<div class="play-only">\n' + f"""<div class="p-top">
+  <div class="p-top-left">
+    <a class="p-back" href="/quiz/">&larr; Quizzes</a>
+    <div class="p-titles">
+      <div class="p-title" id="q-title">Quiz</div>
+      <div class="p-sub hidden" id="q-sub"></div>
+    </div>
+  </div>
+  <div class="p-top-right">
+    <label class="p-time"><span>Timer</span>
+      <select id="q-time" aria-label="Time per question">
+        <option value="0">Off</option>
+        <option value="60">1:00</option>
+        <option value="90">1:30</option>
+        <option value="120">2:00</option>
+        <option value="180">3:00</option>
+        <option value="custom">Custom</option>
+      </select>
+      <input id="q-time-custom" class="hidden" type="text" inputmode="numeric" placeholder="m:ss" aria-label="Custom time per question" maxlength="5">
+    </label>
+    <div class="p-progress">
+      <div class="p-progress-label" id="q-progress-label"></div>
+      <div class="p-progress-bg"><div id="q-fill"></div></div>
+    </div>
+    <button type="button" class="p-reset" id="q-reset-test" title="Reset Test" aria-label="Reset Test" disabled>&#10227;</button>
+  </div>
+</div>
+""" + f"""
 <div id="q-loading" class="muted center" style="margin-top:22px">Loading</div>
 
 <div id="q-out" class="hidden">
@@ -561,12 +588,6 @@ page("quiz/index.html", "Quiz", "Quizzes made from your lecture slides.", wide=T
 </div>
 
 <div id="q-play" class="hidden">
-  <div class="q-bar">
-    <span id="q-progress-label"></span>
-    <button class="q-tool" id="q-reset-test" title="Clear every answer in this test" disabled>Reset Test</button>
-  </div>
-  <div class="q-progress"><div id="q-fill"></div></div>
-
   <div class="q-layout">
     <aside class="q-rail" aria-label="Questions">
       <div class="q-rail-title">Questions</div>
@@ -602,11 +623,11 @@ page("quiz/index.html", "Quiz", "Quizzes made from your lecture slides.", wide=T
         <div class="q-actions">
           <span class="q-score" id="q-score"></span>
           <span class="q-buttons">
-            <button type="button" class="q-flag" id="q-flag" aria-pressed="false">Flag</button>
-            <button type="button" id="q-reset" title="Clear your answer to this question">Reset</button>
-            <button type="button" id="q-back" title="Previous question (Left Arrow)">Back</button>
-            <button type="button" class="primary" id="q-submit" title="Submit (Enter)" disabled>Submit</button>
-            <button type="button" id="q-next">Skip</button>
+            <button type="button" class="p-nav flag" id="q-flag" aria-pressed="false">&#9873;</button>
+            <button type="button" class="p-nav outline reset-q" id="q-reset" title="Reset This Question" aria-label="Reset This Question">&#8634;</button>
+            <button type="button" class="p-nav outline" id="q-back" title="Previous Question (Left Arrow)" aria-label="Previous Question">&#8592;</button>
+            <button type="button" class="p-nav" id="q-submit" title="Submit (Enter)" aria-label="Submit" disabled>&#10003;</button>
+            <button type="button" class="p-nav" id="q-next">&#8594;</button>
           </span>
         </div>
       </div>

@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=a07304ea">
+<link rel="stylesheet" href="/assets/site.css?v=040ac43d">
 </head>
 <body>
 <main class="wide">
@@ -92,16 +92,32 @@
 </div>
 </div>
 <div class="play-only">
-<a class="back" href="/" onclick="if (document.referrer.startsWith(location.origin)) { history.back(); return false; }">&larr; Back</a>
-<div class="top small">
-  <a href="/" aria-label="PDF Occlusion home"><img class="mark" src="/assets/logo.svg" alt=""></a>
-  <h1 id="q-title">Quiz</h1>
-  <p class="q-sub muted hidden" id="q-sub"></p>
-  <nav class="links" aria-label="Main">
-    <a href="/pricing/">Pricing</a>
-    <a href="/quiz/" aria-current="page">Quizzes</a>
-    <a href="/account/">Account</a>
-  </nav>
+<div class="p-top">
+  <div class="p-top-left">
+    <a class="p-back" href="/quiz/">&larr; Quizzes</a>
+    <div class="p-titles">
+      <div class="p-title" id="q-title">Quiz</div>
+      <div class="p-sub hidden" id="q-sub"></div>
+    </div>
+  </div>
+  <div class="p-top-right">
+    <label class="p-time"><span>Timer</span>
+      <select id="q-time" aria-label="Time per question">
+        <option value="0">Off</option>
+        <option value="60">1:00</option>
+        <option value="90">1:30</option>
+        <option value="120">2:00</option>
+        <option value="180">3:00</option>
+        <option value="custom">Custom</option>
+      </select>
+      <input id="q-time-custom" class="hidden" type="text" inputmode="numeric" placeholder="m:ss" aria-label="Custom time per question" maxlength="5">
+    </label>
+    <div class="p-progress">
+      <div class="p-progress-label" id="q-progress-label"></div>
+      <div class="p-progress-bg"><div id="q-fill"></div></div>
+    </div>
+    <button type="button" class="p-reset" id="q-reset-test" title="Reset Test" aria-label="Reset Test" disabled>&#10227;</button>
+  </div>
 </div>
 
 <div id="q-loading" class="muted center" style="margin-top:22px">Loading</div>
@@ -112,12 +128,6 @@
 </div>
 
 <div id="q-play" class="hidden">
-  <div class="q-bar">
-    <span id="q-progress-label"></span>
-    <button class="q-tool" id="q-reset-test" title="Clear every answer in this test" disabled>Reset Test</button>
-  </div>
-  <div class="q-progress"><div id="q-fill"></div></div>
-
   <div class="q-layout">
     <aside class="q-rail" aria-label="Questions">
       <div class="q-rail-title">Questions</div>
@@ -153,11 +163,11 @@
         <div class="q-actions">
           <span class="q-score" id="q-score"></span>
           <span class="q-buttons">
-            <button type="button" class="q-flag" id="q-flag" aria-pressed="false">Flag</button>
-            <button type="button" id="q-reset" title="Clear your answer to this question">Reset</button>
-            <button type="button" id="q-back" title="Previous question (Left Arrow)">Back</button>
-            <button type="button" class="primary" id="q-submit" title="Submit (Enter)" disabled>Submit</button>
-            <button type="button" id="q-next">Skip</button>
+            <button type="button" class="p-nav flag" id="q-flag" aria-pressed="false">&#9873;</button>
+            <button type="button" class="p-nav outline reset-q" id="q-reset" title="Reset This Question" aria-label="Reset This Question">&#8634;</button>
+            <button type="button" class="p-nav outline" id="q-back" title="Previous Question (Left Arrow)" aria-label="Previous Question">&#8592;</button>
+            <button type="button" class="p-nav" id="q-submit" title="Submit (Enter)" aria-label="Submit" disabled>&#10003;</button>
+            <button type="button" class="p-nav" id="q-next">&#8594;</button>
           </span>
         </div>
       </div>
@@ -209,7 +219,7 @@
 </footer>
 <script type="module">
 const p = new URLSearchParams(location.search);
-if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=a0538780"); else import("/assets/home.js?v=99a78ce3");
+if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=71bf3b2b"); else import("/assets/home.js?v=99a78ce3");
 </script>
 <script>
 (function () {
