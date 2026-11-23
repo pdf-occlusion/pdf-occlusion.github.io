@@ -576,3 +576,4 @@ ul.dots.details { color: var(--muted); font-size: 0.94rem; }
 .qh .h-btn.danger { background: var(--red); }
 .qh .h-btn.danger:hover:not(:disabled) { background: #9c3a4e; }
 .qh a.h-btn:hover { text-decoration: none; }
+.qh .h-btn.outline.armed, .qh .h-btn.outline.armed:hover:not(:disabled) { border-color: var(--red); color: var(--red); background: transparent; }

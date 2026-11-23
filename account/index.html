@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/site.css?v=40c60a3b">
+<link rel="stylesheet" href="/assets/site.css?v=6c62f4d0">
 </head>
 <body class="qh">
 <main class="wide">
@@ -58,8 +58,6 @@
           <dl class="a-kv">
             <dt>Plan</dt><dd id="plan">None</dd>
             <dt class="hidden" id="month-k">This month</dt><dd class="hidden" id="month"></dd>
-            <dt class="hidden" id="free-k">Free credits</dt><dd class="hidden" id="free"></dd>
-            <dt class="hidden" id="packs-k">Purchased credits</dt><dd class="hidden" id="packs"></dd>
           </dl>
         </div>
       </div>
@@ -74,7 +72,10 @@
       </div>
 
       <div class="h-card">
-        <div class="h-row"><div class="h-left"><div class="h-name">History</div></div></div>
+        <div class="h-row">
+          <div class="h-left"><div class="h-name">History</div></div>
+          <div class="h-actions"><button class="h-btn outline hidden" id="clear-history" type="button">Clear History</button></div>
+        </div>
         <div class="h-list" id="jobs"></div>
         <div class="h-list hidden" id="no-jobs"><div class="h-empty">No activity yet.</div></div>
       </div>
@@ -122,13 +123,36 @@ function credits(me) {
     pack: c.pack ?? me.pack_pages ?? 0,
   };
 }
-function item(name, stat) {
+function item(name, stat, button) {
   const d = document.createElement("div");
   d.className = "h-item";
   d.innerHTML = '<span class="h-item-name"></span><span class="h-stat"></span>';
   d.children[0].textContent = name;
   d.children[1].textContent = stat;
+  if (button) d.append(button);
   return d;
+}
+// first click asks, second does it
+function confirmed(b, ask) {
+  if (b.classList.contains("armed")) return true;
+  b.dataset.label = b.textContent;
+  b.classList.add("armed");
+  b.textContent = ask;
+  setTimeout(() => { if (b.isConnected && b.classList.contains("armed")) { b.classList.remove("armed"); b.textContent = b.dataset.label; } }, 4000);
+  return false;
+}
+function signOutOne(d) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "h-small";
+  b.textContent = "Sign Out";
+  b.addEventListener("click", async () => {
+    if (!confirmed(b, "Confirm Sign Out")) return;
+    b.disabled = true;
+    try { await api("/v1/devices/sign-out", { method: "POST", body: { id: d.id }, user }); await load(); }
+    catch (e) { err(e.message); b.disabled = false; }
+  });
+  return b;
 }
 const row = (id, text) => { $(id).textContent = text || ""; $(id).classList.toggle("hidden", !text); $(id + "-k").classList.toggle("hidden", !text); };
 async function load() {
@@ -139,18 +163,17 @@ async function load() {
   $("left-note").textContent = c.left === 1 ? "credit remaining" : "credits remaining";
   $("plan").textContent = me.plan === "yearly" ? "Yearly" : me.plan === "monthly" ? "Monthly" : "None";
   row("month", me.plan ? `${n(c.used)} of ${n(c.allowance)} used` : "");
-  row("free", c.free ? `${n(c.free)} remaining` : "");
-  row("packs", c.pack ? `${n(c.pack)} remaining` : "");
   $("upgrade").classList.toggle("hidden", !!me.plan);
   $("billing").classList.toggle("hidden", !me.plan && !c.pack && !paid);
   const dev = $("devices"); dev.replaceChildren();
-  for (const d of me.devices) dev.append(item(d.label || "Anki", d.last_used ? `Last used ${when(d.last_used)}` : `Linked ${when(d.created_at)}`));
+  for (const d of me.devices) dev.append(item(d.label || "Anki", d.last_used ? `Last used ${when(d.last_used)}` : `Linked ${when(d.created_at)}`, d.id ? signOutOne(d) : null));
   dev.classList.toggle("hidden", me.devices.length === 0);
   $("no-devices").classList.toggle("hidden", me.devices.length > 0);
-  $("unlink").classList.toggle("hidden", me.devices.length === 0);
+  $("unlink").classList.toggle("hidden", me.devices.length < 2);
   const jobs = $("jobs"); jobs.replaceChildren();
   for (const j of me.jobs) jobs.append(item(j.lecture || "Untitled PDF", `${j.slides_total} ${j.slides_total === 1 ? "slide" : "slides"}, ${when(j.created_at)}`));
   jobs.classList.toggle("hidden", me.jobs.length === 0);
+  $("clear-history").classList.toggle("hidden", me.jobs.length === 0);
   $("no-jobs").classList.toggle("hidden", me.jobs.length > 0);
 }
 watchUser(async (u) => {
@@ -175,6 +198,14 @@ $("delete-no").addEventListener("click", () => asking(false));
 $("delete-yes").addEventListener("click", async () => {
   try { await api("/v1/me/delete", { method: "POST", user }); asking(false); await deleteSignIn(); }
   catch (e) { err(e.message); }
+});
+$("clear-history").addEventListener("click", async () => {
+  const b = $("clear-history");
+  if (!confirmed(b, "Confirm Clear")) return;
+  b.disabled = true;
+  try { await api("/v1/history/clear", { method: "POST", user }); b.classList.remove("armed"); b.textContent = "Clear History"; await load(); }
+  catch (e) { err(e.message); }
+  b.disabled = false;
 });
 $("unlink").addEventListener("click", async () => {
   try { await api("/v1/devices/sign-out", { method: "POST", user }); await load(); } catch (e) { err(e.message); }
