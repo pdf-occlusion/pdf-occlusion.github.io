@@ -9,7 +9,7 @@ SITE = "https://pdf-occlusion.com"
 SITEMAP = []
 ANKIWEB = "https://ankiweb.net/shared/info/783821131"
 GITHUB = "https://github.com/pdf-occlusion/anki-pdf-occlusion"
-HELP = "mailto:pdf-occlusion-support@googlegroups.com"
+HELP = "mailto:support@pdf-occlusion.com"
 
 HEAD = """<!doctype html>
 <html lang="en">
@@ -680,7 +680,7 @@ page("privacy/index.html", "Privacy Policy", "Privacy policy for PDF Occlusion."
   <p>We may update this policy from time to time. Changes take effect when posted on this page with a new effective date. Your continued use of the Service after that date constitutes acceptance of the updated policy.</p>
 
   <h2>12. Contact</h2>
-  <p>Questions about this policy may be submitted to <a href="{HELP}">pdf-occlusion-support@googlegroups.com</a>.</p>
+  <p>Questions about this policy may be submitted to <a href="{HELP}">support@pdf-occlusion.com</a>.</p>
 </div>
 """)
 
@@ -739,7 +739,7 @@ page("terms/index.html", "Terms of Service", "Terms of service for PDF Occlusion
   <p>We may modify these Terms at any time. Changes take effect when posted on this page with a new effective date. Your continued use of the Service after that date constitutes acceptance of the modified Terms.</p>
 
   <h2>17. Contact</h2>
-  <p>Questions about these Terms may be submitted to <a href="{HELP}">pdf-occlusion-support@googlegroups.com</a>.</p>
+  <p>Questions about these Terms may be submitted to <a href="{HELP}">support@pdf-occlusion.com</a>.</p>
 </div>
 """)
 
