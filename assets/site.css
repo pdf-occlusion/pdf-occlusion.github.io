@@ -151,18 +151,7 @@ footer a { color: var(--muted); }
 .back { position: absolute; top: 18px; left: 16px; z-index: 2; color: var(--accent); font-size: 1rem; }
 .back:hover { color: var(--accent); }
 
-/* home: prices up front */
-.prices { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 16px 10px; }
-.prices > div + div { border-left: 1px solid var(--line); }
-.prices .amount { font-size: 1.5rem; font-weight: 600; color: var(--accent); line-height: 1.2; }
-.prices .what { color: var(--muted); font-size: 0.88rem; }
-
 .prose b { font-weight: 600; }
-
-@media (max-width: 520px) {
-  .prices { grid-template-columns: 1fr; gap: 10px; }
-  .prices > div + div { border-left: none; border-top: 1px solid var(--line); padding-top: 10px; }
-}
 
 /* home: the settings, as small chips */
 .chips { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 560px; margin: 0 auto; }

@@ -120,14 +120,8 @@ G_ICON = ('<svg class="g-icon" viewBox="0 0 18 18" aria-hidden="true"><path fill
           '<path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>')
 
 # ------------------------------------------------------------------ home
-PRICES = f"""<div class="panel prices">
-  <div><div class="amount">Free</div><div class="what">60 credits to start</div></div>
-  <div><div class="amount">$14.99</div><div class="what">1,200 credits per month</div></div>
-  <div><div class="amount">$9.99</div><div class="what">400 credits, no expiration</div></div>
-</div>"""
-
 page("index.html", "PDF Occlusion for Anki",
-     "PDF Occlusion is an Anki add-on that turns lecture PDFs into image occlusion cards. Generate places the boxes, writes text cards or makes a practice quiz. Your first 60 credits are free.",
+     "PDF Occlusion is an Anki add-on that turns lecture PDFs into image occlusion cards. Generate places the boxes, writes text cards or makes a practice quiz.",
      body=top("PDF Occlusion for Anki", small=False) + f"""
 <div class="badges">
   <span class="badge"><span class="badge-k">Add-on code</span><span class="badge-v">783821131</span></span>
@@ -138,8 +132,6 @@ page("index.html", "PDF Occlusion for Anki",
 <p class="lede">Generate turns a lecture PDF into boxes, cards or a quiz.</p>
 
 <div class="row center"><a class="btn primary" href="{ANKIWEB}">Get the Add-on</a></div>
-
-<div style="margin-top:26px">{PRICES}</div>
 
 <div class="panel demo">
   <img src="/assets/demo.gif" width="840" height="525" alt="PDF Occlusion open in Anki, placing boxes over the labels of a physiology slide">
