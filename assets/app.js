@@ -20,7 +20,7 @@ export const ANKIWEB = "https://ankiweb.net/shared/info/783821131";
 
 const FIREBASE = {
   apiKey: "AIzaSyCGLpF7okQTqHrGU-AE_6NWp8w1BdlO8T8",
-  authDomain: "pdf-occlusion.github.io",
+  authDomain: "pdf-occlusion.com",
   projectId: "pdf-occlusion-57036",
   appId: "1:553099909371:web:68c60a14c074a3dc1ff85e",
 };

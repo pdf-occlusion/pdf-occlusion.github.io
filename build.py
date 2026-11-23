@@ -5,6 +5,8 @@
 import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+SITE = "https://pdf-occlusion.com"
+SITEMAP = []
 ANKIWEB = "https://ankiweb.net/shared/info/783821131"
 GITHUB = "https://github.com/pdf-occlusion/anki-pdf-occlusion"
 HELP = "mailto:pdf-occlusion-support@googlegroups.com"
@@ -16,10 +18,11 @@ HEAD = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{desc}">
-<meta property="og:title" content="PDF Occlusion">
+<meta property="og:title" content="PDF Occlusion for Anki">
 <meta property="og:description" content="An Anki add-on that turns lecture PDFs into flashcards and quizzes.">
-<meta property="og:image" content="https://pdf-occlusion.github.io/assets/og.png">
-<meta property="og:url" content="https://pdf-occlusion.github.io/">
+<meta property="og:image" content="https://pdf-occlusion.com/assets/og.png">
+<meta property="og:url" content="{url}">
+<link rel="canonical" href="{url}">{robots}
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -91,9 +94,13 @@ def version(name):
     return hashlib.sha1(open(os.path.join(HERE, "assets", name), "rb").read()).hexdigest()[:8]
 
 
-def page(path, title, desc, body, script="", wide=False):
+def page(path, title, desc, body, script="", wide=False, index=True):
     body = body.replace("{G_ICON}", G_ICON)
-    head = HEAD.format(title=title, desc=desc).replace("CSSVER", version("site.css"))
+    url = SITE + "/" + path.removesuffix("index.html")
+    if index:
+        SITEMAP.append(url)
+    robots = "" if index else '\n<meta name="robots" content="noindex">'
+    head = HEAD.format(title=title, desc=desc, url=url, robots=robots).replace("CSSVER", version("site.css"))
     if wide:
         head = head.replace("<main>", '<main class="wide">')
     script = script.replace("JSVER", version("quiz.js")).replace("HOMEVER", version("home.js"))
@@ -117,9 +124,9 @@ PRICES = f"""<div class="panel prices">
   <div><div class="amount">$9.99</div><div class="what">400 credits, no expiration</div></div>
 </div>"""
 
-page("index.html", "PDF Occlusion",
-     "Generate turns a PDF into image occlusion boxes, text cards or a practice quiz, inside Anki. Your first 60 credits are free.",
-     body=top("PDF Occlusion", small=False) + f"""
+page("index.html", "PDF Occlusion for Anki",
+     "PDF Occlusion is an Anki add-on that turns lecture PDFs into image occlusion cards. Generate places the boxes, writes text cards or makes a practice quiz. Your first 60 credits are free.",
+     body=top("PDF Occlusion for Anki", small=False) + f"""
 <div class="badges">
   <span class="badge"><span class="badge-k">Add-on code</span><span class="badge-v">783821131</span></span>
   <span class="badge"><span class="badge-k">Anki</span><span class="badge-v">23.10+</span></span>
@@ -243,7 +250,7 @@ for (const b of document.querySelectorAll("[data-buy]")) {
 # ------------------------------------------------------------------ account
 # Account matters: credits, plan, billing, installs, history, sign out and
 # delete. Quizzes have their own home at /quiz/.
-page("account/index.html", "Account", "Your credits, plan and linked Anki installs.",
+page("account/index.html", "Account", "Your credits, plan and linked Anki installs.", index=False,
      body=top("Account", "account") + f"""
 <div id="signed-out" class="hidden">
   <p class="lede">Sign in to see your credits and plan.</p>
@@ -554,7 +561,7 @@ if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=JSVER")
 </script>""")
 
 # ------------------------------------------------------------------ link
-page("link/index.html", "Link Anki", "Link the PDF Occlusion add-on to your account.",
+page("link/index.html", "Link Anki", "Link the PDF Occlusion add-on to your account.", index=False,
      body=top("Link Anki") + f"""
 <div id="step-code">
   <p class="lede">The code shown in Anki</p>
@@ -735,3 +742,12 @@ page("terms/index.html", "Terms of Service", "Terms of service for PDF Occlusion
   <p>Questions about these Terms may be submitted to <a href="{HELP}">pdf-occlusion-support@googlegroups.com</a>.</p>
 </div>
 """)
+
+
+# ------------------------------------------------------------------ search engines
+with open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf-8") as f:
+    f.write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            + "".join(f"  <url><loc>{u}</loc></url>\n" for u in SITEMAP) + "</urlset>\n")
+with open(os.path.join(HERE, "robots.txt"), "w", encoding="utf-8") as f:
+    f.write(f"User-agent: *\nAllow: /\n\nSitemap: {SITE}/sitemap.xml\n")
+print("wrote sitemap.xml, robots.txt")
