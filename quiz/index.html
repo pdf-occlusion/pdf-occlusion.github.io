@@ -31,6 +31,7 @@
     <span class="h-rule"></span>
     <button class="h-link" id="h-history-btn" type="button" aria-expanded="false">History</button>
     <a class="h-link" href="/account/">Account</a>
+    <button class="h-link" id="h-sign-out" type="button">Sign Out</button>
   </div>
 </div>
 <div class="h-content">
@@ -257,7 +258,7 @@
 </footer>
 <script type="module">
 const p = new URLSearchParams(location.search);
-if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=89ba8e30"); else import("/assets/home.js?v=99a78ce3");
+if (p.get("id") || p.get("set") || p.get("q")) import("/assets/quiz.js?v=89ba8e30"); else import("/assets/home.js?v=0e04ebfc");
 </script>
 <script>
 (function () {

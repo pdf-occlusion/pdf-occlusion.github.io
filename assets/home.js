@@ -2,7 +2,7 @@
 // stand on each, practice sets (tick quizzes, then all, missed, unseen or
 // flagged questions), questions by ID, quizzes shared with you and your
 // practice history. Signed out it shows the practice kept in this browser.
-import { watchUser, signIn, api } from "/assets/app.js";
+import { watchUser, signIn, forceSignOut, api } from "/assets/app.js";
 import * as P from "/assets/practice.js";
 import * as S from "/assets/sync.js";
 
@@ -35,6 +35,10 @@ function standing(list) {
 }
 
 $("h-sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
+$("h-sign-out").addEventListener("click", (e) => { e.currentTarget.disabled = true; forceSignOut(); });
+// if sign-in never loads, offer it again rather than an empty page
+let known = false;
+setTimeout(() => { if (!known) show("h-out", true); }, 8000);
 
 // ------------------------------------------------ your quizzes
 function quizRow(q, tickable) {
@@ -392,6 +396,8 @@ function paintAll() {
 
 watchUser(async (u) => {
   user = u;
+  known = true;
+  show("h-sign-out", !!u);
   S.setUser(u);
   show("h-out", !u);
   show("h-mine", !!u);

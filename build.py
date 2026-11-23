@@ -299,6 +299,7 @@ page("account/index.html", "Account", "Your credits, plan and linked Anki instal
     <span class="h-who" id="who"></span>
     <span class="h-rule"></span>
     <a class="h-link" href="/quiz/">Quizzes</a>
+    <button class="h-link" id="top-sign-out" type="button">Sign Out</button>
   </div>
 </div>
 <div class="h-content">
@@ -350,7 +351,6 @@ page("account/index.html", "Account", "Your credits, plan and linked Anki instal
       </div>
 
       <div class="a-end">
-        <button class="h-btn outline" id="sign-out" type="button">Sign Out</button>
         <button class="h-btn outline" id="delete" type="button">Delete Account</button>
         <button class="h-btn danger hidden" id="delete-yes" type="button">Delete My Account and History</button>
         <button class="h-btn outline hidden" id="delete-no" type="button">Cancel</button>
@@ -361,13 +361,16 @@ page("account/index.html", "Account", "Your credits, plan and linked Anki instal
 </div>
 </div>
 """, script="""<script type="module">
-import { watchUser, signIn, signOut, deleteSignIn, api, when } from "/assets/app.js";
+import { watchUser, signIn, forceSignOut, deleteSignIn, api, when } from "/assets/app.js";
 const $ = (id) => document.getElementById(id);
 let user = null;
 const err = (m) => { $("acct-error").textContent = m; $("acct-error").classList.remove("hidden"); };
 const n = (x) => Number(x || 0).toLocaleString();
 $("sign-in").addEventListener("click", () => signIn().catch((e) => err(e.message)));
-$("sign-out").addEventListener("click", () => signOut());
+$("top-sign-out").addEventListener("click", (e) => { e.currentTarget.disabled = true; forceSignOut(); });
+// if sign-in never loads, offer it again rather than an empty page
+let known = false;
+setTimeout(() => { if (!known) $("signed-out").classList.remove("hidden"); }, 8000);
 const paid = new URLSearchParams(location.search).get("paid");
 if (paid) {
   $("paid").textContent = paid === "pack" ? "Thank you. 400 credits were added to your account." : "Thank you. Your plan is active.";
@@ -439,6 +442,8 @@ async function load() {
 }
 watchUser(async (u) => {
   user = u;
+  known = true;
+  $("top-sign-out").classList.toggle("hidden", !u);
   $("signed-out").classList.toggle("hidden", !!u);
   $("signed-in").classList.toggle("hidden", !u);
   if (u) load().catch((e) => err(e.message));
@@ -489,6 +494,7 @@ QUIZ_HOME = f"""<div class="home-only qh-wrap">
     <span class="h-rule"></span>
     <button class="h-link" id="h-history-btn" type="button" aria-expanded="false">History</button>
     <a class="h-link" href="/account/">Account</a>
+    <button class="h-link" id="h-sign-out" type="button">Sign Out</button>
   </div>
 </div>
 <div class="h-content">

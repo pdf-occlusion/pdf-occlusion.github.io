@@ -83,6 +83,20 @@ export async function signOut() {
   await lib.signOut(au);
 }
 
+// Sign out even when sign-in never finished loading: try Firebase for a few
+// seconds, then clear the session it keeps in this browser, and reload.
+export async function forceSignOut() {
+  const late = (ms) => new Promise((_, no) => setTimeout(() => no(new Error("timeout")), ms));
+  try {
+    if (DEV_USER) sessionStorage.removeItem("po-dev");
+    else { const { lib, auth: au } = await Promise.race([auth(), late(3000)]); await Promise.race([lib.signOut(au), late(3000)]); }
+  } catch {}
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith("firebase:")) localStorage.removeItem(k); } catch {}
+  try { for (const k of Object.keys(sessionStorage)) if (k.startsWith("firebase:")) sessionStorage.removeItem(k); } catch {}
+  try { indexedDB.deleteDatabase("firebaseLocalStorageDb"); } catch {}
+  location.reload();
+}
+
 // Removes the Google sign-in itself too. Firebase only allows that soon
 // after signing in, so a stale session just signs out instead.
 export async function deleteSignIn() {
