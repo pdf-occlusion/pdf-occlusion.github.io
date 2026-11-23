@@ -592,17 +592,41 @@ ul.dots.details { color: var(--muted); font-size: 0.94rem; }
 .p-titles { min-width: 0; }
 .p-title { font-size: 0.95rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .p-sub { font-size: 0.78rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.p-time { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--muted); }
-.p-time select, .p-time input {
-  height: 26px; border: 1px solid #c5bee0; border-radius: 5px; background: #fbf9fe; color: var(--accent);
-  font: inherit; font-size: 0.8rem; outline: none;
+.p-timer-wrap { position: relative; display: flex; align-items: center; gap: 0.5rem; }
+button.p-timer-btn, button.p-whole {
+  height: 28px; padding: 0 0.7rem; border: 1px solid #c5bee0; border-radius: 5px; background: #fbf9fe;
+  color: var(--accent); font-size: 0.8rem; white-space: nowrap;
 }
-.p-time select {
-  padding: 0 1.5rem 0 0.5rem; cursor: pointer; appearance: none; -webkit-appearance: none;
-  background: #fbf9fe url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235c4f7a' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 0.5rem center;
+button.p-timer-btn:hover:not(:disabled), button.p-timer-btn.on { border-color: var(--accent); background: #fbf9fe; }
+button.p-whole { font-variant-numeric: tabular-nums; min-width: 4.2rem; justify-content: center; }
+button.p-whole.running { border-color: var(--accent); }
+button.p-whole.done { color: #b03030; border-color: #e0b4b4; background: #fdf0f0; }
+.p-timer-panel {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; display: flex; flex-direction: column; gap: 0.6rem;
+  width: max-content; padding: 0.85rem 0.95rem; background: #fbf9fe; border: 1px solid #c5bee0; border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(92, 79, 122, 0.18);
 }
-.p-time input { width: 4.2rem; padding: 0 0.5rem; }
-.p-time select:hover, .p-time select:focus, .p-time input:focus { border-color: var(--accent); }
+.p-timer-panel.hidden { display: none; }
+.p-tp-row { display: grid; grid-template-columns: 6.6rem auto; align-items: center; gap: 0.75rem; }
+.p-tp-k { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+.p-tp-v { display: flex; }
+.p-tp-rule { height: 1px; background: #ddd6ec; margin: 0.1rem 0; }
+.p-timer-panel select, .p-timer-panel input {
+  height: 28px; border: 1px solid #c5bee0; border-radius: 5px; background: #fff; color: var(--accent);
+  font: inherit; font-size: 0.82rem; outline: none;
+}
+.p-timer-panel select {
+  min-width: 6.5rem; padding: 0 1.6rem 0 0.55rem; cursor: pointer; appearance: none; -webkit-appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235c4f7a' stroke-width='1.4'/%3E%3C/svg%3E") no-repeat right 0.55rem center;
+}
+.p-timer-panel input { width: 6.5rem; padding: 0 0.55rem; }
+.p-timer-panel select:hover, .p-timer-panel select:focus, .p-timer-panel input:focus { border-color: var(--accent); }
+.p-seg { display: flex; border: 1px solid #c5bee0; border-radius: 5px; overflow: hidden; }
+.p-seg button { flex: 1 1 0; justify-content: center; height: 28px; padding: 0 0.7rem; border: none; border-radius: 0; background: #fff; color: var(--accent); font-size: 0.8rem; white-space: nowrap; }
+.p-seg button + button { border-left: 1px solid #c5bee0; }
+.p-seg button:hover:not(:disabled) { background: #f3f0fa; }
+.p-seg button.on, .p-seg button.on:hover:not(:disabled) { background: var(--accent); color: #fff; }
+.p-seg button:disabled { background: #fff; color: #b5b5b5; }
 .p-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem; }
 .p-progress-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
 .p-progress-bg { width: 160px; height: 5px; border-radius: 99px; background: #c5bee0; overflow: hidden; }
@@ -736,6 +760,8 @@ button.p-reset.armed, button.p-reset.armed:hover:not(:disabled) { color: var(--p
   .p-top { flex-wrap: wrap; row-gap: 0.5rem; padding: 0.55rem 1rem; }
   .p-top-right { width: 100%; justify-content: space-between; gap: 0.6rem; }
   .p-progress { flex-direction: row; align-items: center; gap: 0.5rem; }
+  .p-timer-panel { left: 0; right: auto; max-width: calc(100vw - 2rem); }
+  .p-tp-row { grid-template-columns: 5.6rem auto; gap: 0.5rem; }
   .p-progress-bg { width: 80px; }
   .is-play .q-layout { flex-direction: column; min-height: 0; }
   .is-play .q-rail {

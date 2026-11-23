@@ -255,6 +255,7 @@ async function load() {
   show("q-play");
   if (resumed && current >= view.length) { showResults(); return; }
   render();
+  startWhole();
 }
 
 // ------------------------------------------------ slide images
@@ -607,82 +608,179 @@ function renderHistory() {
 }
 
 // ------------------------------------------------ timer
-// A set time per question from when it shows (1:30 unless changed in the top
-// bar, kept in this browser); click to pause or carry on. Past 0:00 it turns
-// red and counts the time over. Off hides it.
-const TIME_KEY = "po-timer-sec";
-let timerSec = 90;
-try { const v = localStorage.getItem(TIME_KEY); if (v != null && /^\d+$/.test(v)) timerSec = Math.min(Number(v), 5999); } catch {}
-const timer = { left: timerSec * 1000, end: 0, tick: 0 };
-const mss = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
-function paintTimeSetting() {
-  const sel = $("q-time"), presets = [...sel.options].map((o) => o.value);
-  const custom = !presets.includes(String(timerSec));
-  let opt = sel.querySelector("option[data-set]");
-  if (custom) {
-    if (!opt) { opt = new Option("", ""); opt.dataset.set = "1"; sel.insertBefore(opt, sel.querySelector('option[value="custom"]')); }
-    opt.value = String(timerSec); opt.textContent = mss(timerSec);
-  } else if (opt) opt.remove();
-  sel.value = String(timerSec);
-  $("q-timer").classList.toggle("hidden", !timerSec);
-}
-function setTimeSetting(sec) {
-  timerSec = sec;
-  try { localStorage.setItem(TIME_KEY, String(sec)); } catch {}
-  paintTimeSetting();
-  if (!questions.length) return;
-  resetTimer();
-  if (timerSec && !response(cur()).answered) toggleTimer();
-}
-$("q-time").addEventListener("change", () => {
-  const v = $("q-time").value;
-  if (v !== "custom") { setTimeSetting(Number(v)); $("q-time").blur(); return; }
-  $("q-time").classList.add("hidden");
-  const i = $("q-time-custom");
-  i.value = timerSec ? mss(timerSec) : "";
-  i.classList.remove("hidden");
-  i.focus(); i.select();
-});
-// "2:30", "150" (seconds) or "2:" all work; anything else keeps the old time
-function closeCustom(apply) {
-  const i = $("q-time-custom");
-  if (i.classList.contains("hidden")) return;
-  const m = /^\s*(\d{1,2})?\s*:\s*(\d{0,2})\s*$/.exec(i.value), n = /^\s*(\d{1,4})\s*$/.exec(i.value);
-  const sec = m ? Number(m[1] || 0) * 60 + Number(m[2] || 0) : n ? Number(n[1]) : NaN;
-  i.classList.add("hidden");
-  $("q-time").classList.remove("hidden");
-  if (apply && sec > 0 && sec < 6000) setTimeSetting(sec); else paintTimeSetting();
-}
-$("q-time-custom").addEventListener("keydown", (e) => {
-  e.stopPropagation();
-  if (e.key === "Enter") { e.preventDefault(); closeCustom(true); }
-  if (e.key === "Escape") closeCustom(false);
-});
-$("q-time-custom").addEventListener("blur", () => closeCustom(true));
-paintTimeSetting();
+// Two clocks, both set in the Timer panel in the top bar and kept in this
+// browser. Per question: from when it shows (1:30 unless changed); at zero it
+// keeps counting the time over in red, or skips to the next question. Whole
+// test: from when the test starts; at zero it keeps going in red, or ends the
+// test. Click either clock to pause or carry on. Off hides it.
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, String(v)); } catch {} },
+};
+const secs = (v, d) => (/^\d+$/.test(v) ? Math.min(Number(v), 35999) : d);
+const cfg = {
+  q: secs(store.get("po-timer-sec", "90"), 90),
+  qZero: store.get("po-timer-zero", "keep") === "skip" ? "skip" : "keep",
+  t: secs(store.get("po-test-sec", "0"), 0),
+  tZero: store.get("po-test-zero", "keep") === "end" ? "end" : "keep",
+};
+let timerSec = cfg.q;
+const clock = (ms) => {
+  const over = ms < 0, s = over ? Math.floor(-ms / 1000) : Math.ceil(ms / 1000);
+  return `${over ? "-" : ""}${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+};
+const mss = (sec) => clock(sec * 1000);
+
+// per question
+const timer = { left: timerSec * 1000, end: 0, tick: 0, fired: false };
 function paintTimer() {
   const el = $("q-timer");
-  const over = timer.left < 0;
-  const s = over ? Math.floor(-timer.left / 1000) : Math.ceil(timer.left / 1000);
-  el.textContent = `${over ? "-" : ""}${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  el.textContent = clock(timer.left);
   el.classList.toggle("running", !!timer.tick);
   el.classList.toggle("done", timer.left <= 0);
-  el.title = timer.tick ? "Pause the timer" : "Start the timer";
+  el.title = timer.tick ? "Pause the Timer" : "Start the Timer";
   el.setAttribute("aria-pressed", timer.tick ? "true" : "false");
+  el.classList.toggle("hidden", !timerSec);
 }
 function stopTimer() {
   if (timer.tick) timer.left = timer.end - Date.now();
   clearInterval(timer.tick);
   timer.tick = 0;
 }
-function resetTimer() { clearInterval(timer.tick); timer.tick = 0; timer.left = timerSec * 1000; paintTimer(); }
+function resetTimer() { clearInterval(timer.tick); timer.tick = 0; timer.left = timerSec * 1000; timer.fired = false; paintTimer(); }
 function toggleTimer() {
   if (timer.tick) { stopTimer(); paintTimer(); return; }
   timer.end = Date.now() + timer.left;
-  timer.tick = setInterval(() => { timer.left = timer.end - Date.now(); paintTimer(); }, 200);
+  timer.tick = setInterval(() => {
+    timer.left = timer.end - Date.now();
+    paintTimer();
+    if (timer.left <= 0 && !timer.fired) {
+      timer.fired = true;
+      if (cfg.qZero === "skip" && !resultsOpen && !response(cur()).answered) nextQuestion();
+    }
+  }, 200);
   paintTimer();
 }
 $("q-timer").addEventListener("click", toggleTimer);
+
+// whole test
+const whole = { left: cfg.t * 1000, end: 0, tick: 0, fired: false };
+function paintWhole() {
+  const el = $("q-whole");
+  el.classList.toggle("hidden", !cfg.t);
+  el.textContent = clock(whole.left);
+  el.classList.toggle("running", !!whole.tick);
+  el.classList.toggle("done", whole.left <= 0);
+  el.title = whole.tick ? "Pause the Test Timer" : "Start the Test Timer";
+  el.setAttribute("aria-pressed", whole.tick ? "true" : "false");
+}
+function stopWhole() {
+  if (whole.tick) whole.left = whole.end - Date.now();
+  clearInterval(whole.tick);
+  whole.tick = 0;
+  paintWhole();
+}
+function runWhole() {
+  if (whole.tick || !cfg.t) return;
+  whole.end = Date.now() + whole.left;
+  whole.tick = setInterval(() => {
+    whole.left = whole.end - Date.now();
+    paintWhole();
+    if (whole.left <= 0 && !whole.fired) {
+      whole.fired = true;
+      if (cfg.tZero === "end" && !resultsOpen) { saveSession(); showResults(); }
+    }
+  }, 250);
+  paintWhole();
+}
+// a fresh test: the whole-test clock starts over
+function startWhole() { clearInterval(whole.tick); whole.tick = 0; whole.left = cfg.t * 1000; whole.fired = false; paintWhole(); if (questions.length) runWhole(); }
+$("q-whole").addEventListener("click", () => { if (whole.tick) stopWhole(); else if (!resultsOpen) runWhole(); });
+
+// the Timer panel
+function paintPanel() {
+  for (const [id, sec] of [["q-time", timerSec], ["q-test-time", cfg.t]]) {
+    const sel = $(id), presets = [...sel.options].filter((o) => !o.dataset.set).map((o) => o.value);
+    let opt = sel.querySelector("option[data-set]");
+    if (!presets.includes(String(sec))) {
+      if (!opt) { opt = new Option("", ""); opt.dataset.set = "1"; sel.insertBefore(opt, sel.querySelector('option[value="custom"]')); }
+      opt.value = String(sec); opt.textContent = mss(sec);
+    } else if (opt) opt.remove();
+    sel.value = String(sec);
+  }
+  for (const [id, v, on] of [["q-time-zero", cfg.qZero, !!timerSec], ["q-test-zero", cfg.tZero, !!cfg.t]]) {
+    for (const b of $(id).querySelectorAll("button")) {
+      b.classList.toggle("on", on && b.dataset.v === v);
+      b.setAttribute("aria-pressed", on && b.dataset.v === v ? "true" : "false");
+      b.disabled = !on;
+    }
+  }
+}
+function setQuestionTime(sec) {
+  timerSec = cfg.q = sec;
+  store.set("po-timer-sec", sec);
+  paintPanel();
+  if (!questions.length) { paintTimer(); return; }
+  resetTimer();
+  if (timerSec && !resultsOpen && !response(cur()).answered) toggleTimer();
+}
+function setTestTime(sec) {
+  cfg.t = sec;
+  store.set("po-test-sec", sec);
+  paintPanel();
+  if (!resultsOpen) startWhole(); else { stopWhole(); whole.left = sec * 1000; paintWhole(); }
+}
+// "2:30", "150" or "2:"; a bare number is seconds per question, minutes for the whole test
+function parseTime(text, bareMinutes) {
+  const m = /^\s*(\d{1,3})?\s*:\s*(\d{0,2})\s*$/.exec(text), n = /^\s*(\d{1,4})\s*$/.exec(text);
+  if (m) return Number(m[1] || 0) * 60 + Number(m[2] || 0);
+  if (n) return Number(n[1]) * (bareMinutes ? 60 : 1);
+  return NaN;
+}
+function durationField(selId, inputId, current, apply, bareMinutes) {
+  const sel = $(selId), input = $(inputId);
+  const close = (ok) => {
+    if (input.classList.contains("hidden")) return;
+    const sec = parseTime(input.value, bareMinutes);
+    input.classList.add("hidden");
+    sel.classList.remove("hidden");
+    if (ok && sec > 0 && sec < 36000) apply(sec); else paintPanel();
+  };
+  sel.addEventListener("change", () => {
+    if (sel.value !== "custom") { apply(Number(sel.value)); return; }
+    sel.classList.add("hidden");
+    input.value = current() ? mss(current()) : "";
+    input.classList.remove("hidden");
+    input.focus(); input.select();
+  });
+  input.addEventListener("keydown", (e) => {
+    e.stopPropagation();
+    if (e.key === "Enter") { e.preventDefault(); close(true); }
+    if (e.key === "Escape") close(false);
+  });
+  input.addEventListener("blur", () => close(true));
+}
+durationField("q-time", "q-time-custom", () => timerSec, setQuestionTime, false);
+durationField("q-test-time", "q-test-time-custom", () => cfg.t, setTestTime, true);
+for (const [id, key, field] of [["q-time-zero", "po-timer-zero", "qZero"], ["q-test-zero", "po-test-zero", "tZero"]]) {
+  $(id).addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b || b.disabled) return;
+    cfg[field] = b.dataset.v;
+    store.set(key, b.dataset.v);
+    paintPanel();
+  });
+}
+function openPanel(on) {
+  $("q-timer-panel").classList.toggle("hidden", !on);
+  $("q-timer-btn").setAttribute("aria-expanded", on ? "true" : "false");
+  $("q-timer-btn").classList.toggle("on", on);
+}
+$("q-timer-btn").addEventListener("click", (e) => { e.stopPropagation(); openPanel($("q-timer-panel").classList.contains("hidden")); });
+document.addEventListener("click", (e) => { if (!e.target.closest(".p-timer-wrap")) openPanel(false); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("q-timer-panel").classList.contains("hidden")) openPanel(false); }, true);
+paintPanel();
+paintWhole();
 
 $("q-id").addEventListener("click", () => {
   const btn = $("q-id"), q = questions[cur()];
@@ -892,6 +990,7 @@ function leaveResults() {
 function showResults() {
   hidePop();
   stopTimer();
+  stopWhole();
   $("q-card").classList.add("hidden");
   const { correct, wrong, total, flagged, skipped } = tally();
   const pct = total ? Math.round((correct / total) * 100) : 0;
@@ -934,6 +1033,7 @@ function replay() {
   current = 0;
   leaveResults();
   render();
+  startWhole();
   scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1052,6 +1152,7 @@ document.addEventListener("keydown", (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   const t = e.target;
   if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable)) return;
+  if (t && t.closest && t.closest(".p-timer-wrap")) return;
   const key = e.key, k = key.length === 1 ? key.toLowerCase() : key;
   if (key === "ArrowLeft") { e.preventDefault(); prevQuestion(); return; }
   if (key === "ArrowRight") { e.preventDefault(); nextQuestion(); return; }

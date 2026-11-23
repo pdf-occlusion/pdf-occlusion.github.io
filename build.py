@@ -561,17 +561,55 @@ page("quiz/index.html", "Quiz", "Quizzes made from your lecture slides.", wide=T
     </div>
   </div>
   <div class="p-top-right">
-    <label class="p-time"><span>Timer</span>
-      <select id="q-time" aria-label="Time per question">
-        <option value="0">Off</option>
-        <option value="60">1:00</option>
-        <option value="90">1:30</option>
-        <option value="120">2:00</option>
-        <option value="180">3:00</option>
-        <option value="custom">Custom</option>
-      </select>
-      <input id="q-time-custom" class="hidden" type="text" inputmode="numeric" placeholder="m:ss" aria-label="Custom time per question" maxlength="5">
-    </label>
+    <div class="p-timer-wrap">
+      <button type="button" class="p-whole hidden" id="q-whole" aria-pressed="false"></button>
+      <button type="button" class="p-timer-btn" id="q-timer-btn" aria-expanded="false" aria-controls="q-timer-panel">Timer</button>
+      <div class="p-timer-panel hidden" id="q-timer-panel" role="group" aria-label="Timer">
+        <div class="p-tp-row">
+          <span class="p-tp-k">Per Question</span>
+          <div class="p-tp-v">
+            <select id="q-time" aria-label="Time per question">
+              <option value="0">Off</option>
+              <option value="60">1:00</option>
+              <option value="90">1:30</option>
+              <option value="120">2:00</option>
+              <option value="180">3:00</option>
+              <option value="custom">Custom</option>
+            </select>
+            <input id="q-time-custom" class="hidden" type="text" inputmode="numeric" placeholder="m:ss" aria-label="Custom time per question" maxlength="5">
+          </div>
+        </div>
+        <div class="p-tp-row">
+          <span class="p-tp-k">At Zero</span>
+          <div class="p-seg" id="q-time-zero">
+            <button type="button" data-v="keep">Keep Going</button>
+            <button type="button" data-v="skip">Skip Question</button>
+          </div>
+        </div>
+        <div class="p-tp-rule"></div>
+        <div class="p-tp-row">
+          <span class="p-tp-k">Whole Test</span>
+          <div class="p-tp-v">
+            <select id="q-test-time" aria-label="Time for the whole test">
+              <option value="0">Off</option>
+              <option value="900">15:00</option>
+              <option value="1800">30:00</option>
+              <option value="2700">45:00</option>
+              <option value="3600">60:00</option>
+              <option value="custom">Custom</option>
+            </select>
+            <input id="q-test-time-custom" class="hidden" type="text" inputmode="numeric" placeholder="mm:ss" aria-label="Custom time for the whole test" maxlength="6">
+          </div>
+        </div>
+        <div class="p-tp-row">
+          <span class="p-tp-k">At Zero</span>
+          <div class="p-seg" id="q-test-zero">
+            <button type="button" data-v="keep">Keep Going</button>
+            <button type="button" data-v="end">End Test</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="p-progress">
       <div class="p-progress-label" id="q-progress-label"></div>
       <div class="p-progress-bg"><div id="q-fill"></div></div>
