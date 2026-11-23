@@ -57,8 +57,14 @@ a:hover { text-decoration: underline; }
 .top.small .mark { width: 44px; height: 44px; }
 h1 { font-weight: 600; font-size: 2rem; letter-spacing: -0.01em; margin-top: 8px; }
 .top.small h1 { font-size: 1.5rem; margin-top: 4px; }
-nav.links { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px; }
-nav.links a[aria-current] { color: var(--ink); }
+nav.links {
+  display: inline-flex; justify-content: center; gap: 2px; margin-top: 12px; padding: 3px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+  box-shadow: 0 3px 10px rgba(70, 50, 110, 0.1);
+}
+nav.links a { padding: 5px 16px; border-radius: 999px; color: var(--accent); transition: background 0.15s, color 0.15s; }
+nav.links a:hover { background: rgba(92, 79, 122, 0.1); text-decoration: none; }
+nav.links a[aria-current] { background: var(--accent); color: #fff; }
 
 .badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
 .badge {
