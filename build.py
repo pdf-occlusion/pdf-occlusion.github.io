@@ -137,6 +137,8 @@ page("index.html", "PDF Occlusion for Anki",
 
 <p class="lede">Generate turns a lecture PDF into boxes, cards or a quiz.</p>
 
+<div class="row center"><a class="btn primary" href="{ANKIWEB}">Get the Add-on</a></div>
+
 <div style="margin-top:26px">{PRICES}</div>
 
 <div class="panel demo">
