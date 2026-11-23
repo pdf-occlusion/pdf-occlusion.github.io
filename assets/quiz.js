@@ -346,6 +346,8 @@ function splitTable(text) {
 // A highlight is a pair of character offsets into a block's plain text (the
 // stem, a choice, an explanation), so it survives re-rendering and reloads.
 const hlPop = $("hl-pop"), hlAdd = $("hl-add"), hlDel = $("hl-del");
+// placed in page coordinates, so it lives on <body>, not in the centered column
+document.body.append(hlPop);
 let hlSources = {}, hlPending = null, hlTimer = null;
 const highlightsOf = (i) => response(i).highlights;
 const esc = (t) => t.replace(/[&<>]/g, (c) => (c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;"));
