@@ -127,7 +127,7 @@ GET = (f'<a class="btn primary big" href="{ANKIWEB}">'
 page("index.html", "PDF Occlusion for Anki",
      "PDF Occlusion is an Anki add-on that turns lecture PDFs into image occlusion cards. Generate places the boxes, writes text cards or makes a practice quiz.",
      body=top("PDF Occlusion for Anki", small=False) + f"""
-<p class="lede">Generate turns a lecture PDF into boxes, cards or a quiz.</p>
+<p class="lede">Turn any PDF into Anki cards by covering the parts you want to remember.</p>
 
 <div class="cta">
   {GET}
@@ -171,14 +171,15 @@ page("index.html", "PDF Occlusion for Anki",
 <section class="center">
   <h2>Set It Once</h2>
   <ul class="chips">
-    <li>All labels or key ones</li>
-    <li>Key phrases or whole lines</li>
-    <li>Numbers and doses</li>
-    <li>Bold or colored text</li>
+    <li>Fewer or more cards</li>
+    <li>Every label or key ones</li>
+    <li>Key phrase or whole point</li>
     <li>Tables by cell or row</li>
-    <li>Pathways step by step</li>
-    <li>Pages to skip</li>
-    <li>Your own rules</li>
+    <li>Complete, essentials or from scratch</li>
+    <li>Basic science, clinical or quick recall quizzes</li>
+    <li>Your notes PDF</li>
+    <li>Skip title and reference slides</li>
+    <li>Your own instructions</li>
   </ul>
 </section>
 
